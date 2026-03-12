@@ -66,7 +66,7 @@ Test against diverse scenarios, then revise.
 
 - A single test hides most failure modes. Minimum: three scenarios stressing different aspects.
 - Distinguish harmful violations from harmless ones; stop when marginal gain falls below marginal complexity.
-- First revision captures most improvement. Recognize diminishing returns.
+- First revision captures most improvement. Recognize diminishing returns — beyond that, gains come from revising test scenarios or task framing, not the prompt.
 
 ## Token Economy
 
@@ -86,12 +86,9 @@ Priority: **Performance >= Meaning > Length**
 
 ## Design Notes
 
-Non-procedural rationale supplementing the principles above.
-
 - **Context > Persona**: Contextualizing viewpoint and knowledge beats "You are..." declarations. If persona is core to the outcome, reinforce via mindset and behavior patterns, not role labels.
 - **Format Synchrony**: End AI leaks the Prompt's tone, format, and style into output. The prompt *is* a style example whether you intend it or not.
 - **Inducing Thought**: Guide reasoning via Goal, Context, Metaphor — not procedural chain-of-thought. Numbered steps maximize compliance but rigidify reasoning.
-- **Iterative Convergence**: First revision captures most improvement. At some point, gains come from revising test scenarios or task framing, not the prompt.
 - **Model Capability Matching**: Reasoning models perform best with high-level goals, concise context, and room to determine approach. Instruction-following models benefit from explicit steps and detailed constraints. Applying heavy procedural constraints to a reasoning model degrades output — tokens spent on compliance are tokens not spent on problem-solving. When model type is unknown, default to reasoning-model assumptions.
 
 ## References
