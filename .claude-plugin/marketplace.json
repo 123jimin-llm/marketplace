@@ -1,0 +1,29 @@
+{
+  "name": "jiminp-marketplace",
+  "owner": {
+    "name": "Jimin Park"
+  },
+  "metadata": {
+    "description": "Personal collection of LLM agent skills. Feel free to use.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "prompt-engineer",
+      "description": "Draft and revise LLM prompts, system prompts, AGENTS.md, and Agent Skills.",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/prompt-engineer"
+      ]
+    },
+    {
+      "name": "worklog",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/worklog"
+      ]
+    }
+  ]
+}
