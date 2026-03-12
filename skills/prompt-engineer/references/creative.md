@@ -2,7 +2,7 @@
 
 Additional principles for prompts where the output is *experienced* rather than consumed — narrative fiction, roleplay, chatbot persona, aesthetic writing.
 
-These supplement the core Writing Principles. Apply them alongside, not instead of, the main skill.
+These supplement the core Writing Principles, but for creative tasks these principles take priority where they conflict — particularly around procedural constraints and rigid structure, which suppress creative Performance.
 
 ## Narrative & Fiction
 
