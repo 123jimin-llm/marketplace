@@ -19,6 +19,7 @@
     },
     {
       "name": "worklog",
+      "description": "AI Agent Task Management.",
       "source": "./",
       "strict": false,
       "skills": [
