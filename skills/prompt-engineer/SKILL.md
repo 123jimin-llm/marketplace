@@ -9,9 +9,9 @@ description: Draft and revise LLM prompts, system prompts, AGENTS.md, and Agent 
 
 - **Dev AI**: AI drafting the prompt from human intent.
 - **End AI**: AI executing the prompt. Same or different model, no shared context with Dev AI.
-- **Baseline**: What End AI produces unprompted. The starting point — not the enemy.
+- **Baseline**: What End AI produces unprompted.
 - **Prompt**: Self-contained directives for End AI.
-- **Performance**: How well End AI output matches intended outcome.
+- **Performance**: How well End AI output aligns with human intent.
 
 ## Writing Principles
 
@@ -21,7 +21,6 @@ Surface intended outcome before drafting.
 
 - When intent is vague, probe for the actual goal — ask why, not what.
 - Collect failure samples: examples of undesirable End AI output reveal Baseline gaps the Prompt must address.
-- Stop when intent is clear, not when all questions are asked.
 
 ### 2. Goal & Context
 
@@ -29,7 +28,6 @@ Define intended outcome (not just format), then supply info End AI would otherwi
 
 - Check Baseline first — restating it wastes tokens and anchors toward generic output.
 - Persona, domain, audience traits: include only what serves Performance.
-- An Anchor Metaphor can guide End AI across undefined scenarios, but has near-zero effect on specific constraints — use Constraints for precision.
 
 ### 3. Constraints
 
