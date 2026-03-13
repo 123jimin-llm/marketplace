@@ -79,6 +79,8 @@ separator = "\n---\n"                 # per-entry override (join point before th
 file = "results.jsonl"
 ```
 
-Matrix = cartesian product of all array values across `[generation]` and `[[prompts]]`. File paths resolve relative to TOML parent dir. Above example: 2 models × 3 temps × 2 system files = 12 runs.
+Matrix = cartesian product of all array values across `[generation]` and `[[prompts]]`. Above example: 2 models × 3 temps × 2 system files = 12 runs.
+
+**Path resolution:** All file paths (`file`, `[vars]`, `[output].file`) resolve relative to the TOML file's parent directory. If `run.toml` is in `project/tests/`, then `file = "../src/prompt.md"` resolves to `project/src/prompt.md`.
 
 Per-run errors are recorded without aborting. Summary table prints to stderr after completion. Requires `ANTHROPIC_API_KEY` and/or `OPENAI_API_KEY`.
