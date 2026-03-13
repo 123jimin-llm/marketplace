@@ -12,19 +12,13 @@
       "name": "prompt-engineer",
       "description": "Draft and revise LLM prompts, system prompts, AGENTS.md, and Agent Skills.",
       "source": "./plugins/prompt-engineer",
-      "strict": false,
-      "skills": [
-        "./skills/prompt-engineer"
-      ]
+      "strict": true
     },
     {
       "name": "worklog",
       "description": "AI Agent Task Management.",
       "source": "./plugins/worklog",
-      "strict": false,
-      "skills": [
-        "./skills/worklog"
-      ]
+      "strict": true
     }
   ]
 }
