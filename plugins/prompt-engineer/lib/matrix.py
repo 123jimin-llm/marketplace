@@ -60,6 +60,23 @@ def _resolve_prompt_entry(entry: dict, base_dir: Path) -> list[tuple[str, str]]:
         return list(zip(labels, prompts))
 
 
+def _resolve_vars(config: dict) -> dict[str, str]:
+    """Resolve [vars] section: read each value as a file path relative to _base_dir."""
+    base_dir = config["_base_dir"]
+    raw_vars = config.get("vars", {})
+    resolved = {}
+    for name, path in raw_vars.items():
+        resolved[name] = resolve_value(path, base_dir)
+    return resolved
+
+
+def _apply_substitute(text: str, resolved_vars: dict[str, str]) -> str:
+    """Replace {{key}} placeholders in text with resolved var values."""
+    for key, value in resolved_vars.items():
+        text = text.replace("{{" + key + "}}", value)
+    return text
+
+
 def expand_matrix(config: dict) -> list[dict]:
     """Build cartesian product of sweep dimensions from a parsed config.
 
@@ -73,32 +90,42 @@ def expand_matrix(config: dict) -> list[dict]:
     if prompts is None:
         raise ValueError("Config missing [[prompts]] section (required for invoke-llm)")
 
+    # Resolve [vars] section
+    resolved_vars = _resolve_vars(config)
+
+    # Top-level separator
+    top_separator = gen.get("separator", "\n\n")
+
     # Generation sweep dimensions
     models = _ensure_list(gen.get("model", "claude-sonnet-4-6"))
     temperatures = _ensure_list(gen.get("temperature", 1.0))
     max_tokens_list = _ensure_list(gen.get("max_tokens", 4096))
 
     # Group prompt entries by role, preserving order within each role
-    # Each entry becomes a sweep dimension (array values) or fixed (scalar)
     system_entries = []  # list of list[(label, text)]
     user_entries = []
+    system_meta = []  # per-entry: (separator, substitute)
+    user_meta = []
 
     for entry in prompts:
         role = entry.get("role")
         if role not in ("system", "user"):
             raise ValueError(f"Unknown prompt role: {role!r} (must be 'system' or 'user')")
+
         resolved = _resolve_prompt_entry(entry, base_dir)
+        meta = (entry.get("separator", None), entry.get("substitute", False))
+
         if role == "system":
             system_entries.append(resolved)
+            system_meta.append(meta)
         else:
             user_entries.append(resolved)
+            user_meta.append(meta)
 
     if not user_entries:
         raise ValueError("Config has no user prompts in [[prompts]]")
 
-    # Build sweep dimensions for prompt entries
-    # Each entry's resolved list is a sweep dimension; we take the cartesian product
-    # Then within each combination, same-role entries are concatenated
+    # Build sweep dimensions
     system_combos = list(itertools.product(*system_entries)) if system_entries else [()]
     user_combos = list(itertools.product(*user_entries)) if user_entries else [()]
 
@@ -108,9 +135,8 @@ def expand_matrix(config: dict) -> list[dict]:
             for max_tok in max_tokens_list:
                 for sys_combo in system_combos:
                     for usr_combo in user_combos:
-                        # Concatenate same-role entries
-                        sys_text = "\n\n".join(text for _, text in sys_combo) if sys_combo else None
-                        usr_text = "\n\n".join(text for _, text in usr_combo)
+                        sys_text = _join_parts(sys_combo, system_meta, top_separator, resolved_vars) if sys_combo else None
+                        usr_text = _join_parts(usr_combo, user_meta, top_separator, resolved_vars)
 
                         # Build labels
                         sys_label = "/".join(label for label, _ in sys_combo) if sys_combo else None
@@ -134,6 +160,31 @@ def expand_matrix(config: dict) -> list[dict]:
                         })
 
     return runs
+
+
+def _join_parts(
+    combo: tuple,
+    meta: list[tuple],
+    top_separator: str,
+    resolved_vars: dict[str, str],
+) -> str:
+    """Join a combo of (label, text) pairs using per-entry separators and substitution."""
+    parts = []
+    for i, (_, text) in enumerate(combo):
+        _, do_substitute = meta[i]
+        if do_substitute and resolved_vars:
+            text = _apply_substitute(text, resolved_vars)
+        parts.append(text)
+
+    if not parts:
+        return ""
+
+    result = parts[0]
+    for i in range(1, len(parts)):
+        entry_sep, _ = meta[i]
+        sep = entry_sep if entry_sep is not None else top_separator
+        result += sep + parts[i]
+    return result
 
 
 def matrix_dimensions(config: dict) -> dict:

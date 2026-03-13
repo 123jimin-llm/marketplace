@@ -265,6 +265,150 @@ class TestExpandMatrix:
 
 
 # ---------------------------------------------------------------------------
+# separator
+# ---------------------------------------------------------------------------
+
+class TestSeparator:
+    def test_top_level_separator(self, tmp_path):
+        cfg = _config(tmp_path,
+            generation={"separator": "\n---\n"},
+            prompts=[
+                {"role": "user", "prompt": "part1"},
+                {"role": "user", "prompt": "part2"},
+            ],
+        )
+        runs = expand_matrix(cfg)
+        assert runs[0]["user_message"] == "part1\n---\npart2"
+
+    def test_per_entry_separator_overrides_top_level(self, tmp_path):
+        cfg = _config(tmp_path,
+            generation={"separator": "\n---\n"},
+            prompts=[
+                {"role": "user", "prompt": "part1"},
+                {"role": "user", "prompt": "part2", "separator": " | "},
+            ],
+        )
+        runs = expand_matrix(cfg)
+        assert runs[0]["user_message"] == "part1 | part2"
+
+    def test_default_separator_unchanged(self, tmp_path):
+        """Existing behavior: default separator is \\n\\n."""
+        cfg = _config(tmp_path,
+            prompts=[
+                {"role": "user", "prompt": "a"},
+                {"role": "user", "prompt": "b"},
+            ],
+        )
+        runs = expand_matrix(cfg)
+        assert runs[0]["user_message"] == "a\n\nb"
+
+    def test_system_separator(self, tmp_path):
+        cfg = _config(tmp_path,
+            generation={"separator": "\n"},
+            prompts=[
+                {"role": "system", "prompt": "role"},
+                {"role": "system", "prompt": "rules"},
+                {"role": "user", "prompt": "q"},
+            ],
+        )
+        runs = expand_matrix(cfg)
+        assert runs[0]["system"] == "role\nrules"
+
+    def test_mixed_per_entry_separators(self, tmp_path):
+        cfg = _config(tmp_path,
+            prompts=[
+                {"role": "user", "prompt": "a"},
+                {"role": "user", "prompt": "b", "separator": " "},
+                {"role": "user", "prompt": "c"},  # falls back to default \n\n
+            ],
+        )
+        runs = expand_matrix(cfg)
+        assert runs[0]["user_message"] == "a b\n\nc"
+
+
+# ---------------------------------------------------------------------------
+# vars and substitute
+# ---------------------------------------------------------------------------
+
+class TestVarsAndSubstitute:
+    def test_vars_resolved_from_files(self, tmp_path):
+        (tmp_path / "data.txt").write_text("file content", encoding="utf-8")
+        cfg = _config(tmp_path,
+            prompts=[
+                {"role": "user", "prompt": "Tell me about {{input}}", "substitute": True},
+            ],
+        )
+        cfg["vars"] = {"input": "data.txt"}
+        runs = expand_matrix(cfg)
+        assert runs[0]["user_message"] == "Tell me about file content"
+
+    def test_substitute_false_leaves_placeholders(self, tmp_path):
+        (tmp_path / "data.txt").write_text("resolved", encoding="utf-8")
+        cfg = _config(tmp_path,
+            prompts=[
+                {"role": "user", "prompt": "{{input}} verbatim"},
+            ],
+        )
+        cfg["vars"] = {"input": "data.txt"}
+        runs = expand_matrix(cfg)
+        assert runs[0]["user_message"] == "{{input}} verbatim"
+
+    def test_multiple_vars(self, tmp_path):
+        (tmp_path / "a.txt").write_text("AAA", encoding="utf-8")
+        (tmp_path / "b.txt").write_text("BBB", encoding="utf-8")
+        cfg = _config(tmp_path,
+            prompts=[
+                {"role": "user", "prompt": "{{x}} and {{y}}", "substitute": True},
+            ],
+        )
+        cfg["vars"] = {"x": "a.txt", "y": "b.txt"}
+        runs = expand_matrix(cfg)
+        assert runs[0]["user_message"] == "AAA and BBB"
+
+    def test_substitute_with_file_entry(self, tmp_path):
+        (tmp_path / "template.md").write_text("Process: {{input}}", encoding="utf-8")
+        (tmp_path / "case.txt").write_text("test case data", encoding="utf-8")
+        cfg = _config(tmp_path,
+            prompts=[
+                {"role": "user", "file": "template.md", "substitute": True},
+            ],
+        )
+        cfg["vars"] = {"input": "case.txt"}
+        runs = expand_matrix(cfg)
+        assert runs[0]["user_message"] == "Process: test case data"
+
+    def test_no_vars_section_no_error(self, tmp_path):
+        cfg = _config(tmp_path,
+            prompts=[{"role": "user", "prompt": "plain"}],
+        )
+        runs = expand_matrix(cfg)
+        assert runs[0]["user_message"] == "plain"
+
+    def test_vars_missing_file_errors(self, tmp_path):
+        cfg = _config(tmp_path,
+            prompts=[
+                {"role": "user", "prompt": "{{x}}", "substitute": True},
+            ],
+        )
+        cfg["vars"] = {"x": "nonexistent.txt"}
+        with pytest.raises(FileNotFoundError, match="nonexistent.txt"):
+            expand_matrix(cfg)
+
+    def test_substitute_combined_with_separator(self, tmp_path):
+        (tmp_path / "inp.txt").write_text("DATA", encoding="utf-8")
+        cfg = _config(tmp_path,
+            generation={"separator": "\n---\n"},
+            prompts=[
+                {"role": "user", "prompt": "Analyze: {{input}}", "substitute": True},
+                {"role": "user", "prompt": "Be thorough"},
+            ],
+        )
+        cfg["vars"] = {"input": "inp.txt"}
+        runs = expand_matrix(cfg)
+        assert runs[0]["user_message"] == "Analyze: DATA\n---\nBe thorough"
+
+
+# ---------------------------------------------------------------------------
 # matrix_dimensions
 # ---------------------------------------------------------------------------
 

@@ -7,7 +7,7 @@ description: "Run prompts against LLMs. Trigger on: test/send/invoke a prompt, g
 
 Script: `scripts/invoke-llm.py`
 
-Calls raw LLM APIs (text in, text out). No tool use, no agent context, no skills. To test agent-level behavior, use a separate Claude Code session.
+Raw LLM API calls (text in, text out). No tool use, no agent context, no skills.
 
 ## Single-shot mode
 
@@ -32,7 +32,7 @@ invoke-llm.py -U prompt.md -m gpt-5-mini -t 0.0 --json
 | `-o FILE` | Write output to file (still prints to stdout) |
 | `--json` | JSON output with metadata (response, model, tokens, latency, stop_reason) |
 
-Repeatable flags are joined with double newlines. When combining `-u`/`-U` (or `-s`/`-S`), strings come before file contents.
+Repeatable flags join with `"\n\n"`. When combining `-u`/`-U` (or `-s`/`-S`), strings come before file contents.
 
 ## TOML config mode
 
@@ -48,44 +48,32 @@ invoke-llm.py -c run.toml --json            # JSONL output to stdout
 
 ```toml
 [generation]
-model = "claude-sonnet-4-6"          # scalar = fixed, array = sweep
-temperature = 1.0                     # array → sweep dimension
+model = ["claude-sonnet-4-6", "gpt-5-mini"]   # scalar = fixed, array = sweep
+temperature = [0.0, 0.5, 1.0]
 max_tokens = 4096
+separator = "\n\n"                    # join between same-role entries; default "\n\n"
+
+[vars]
+input = "inputs/case1.md"            # named file refs, content read at runtime
 
 [[prompts]]
 role = "system"                       # "system" or "user"
 file = ["strict.md", "relaxed.md"]    # array = sweep dimension
-# OR: prompt = "inline text"          # file and prompt are mutually exclusive
+
+[[prompts]]
+role = "user"
+prompt = "inline text"                # use file or prompt, not both
 
 [[prompts]]                           # multiple same-role entries = concatenation
 role = "user"
 file = "question.md"
-
-[output]
-file = "results.jsonl"                # optional JSONL output
-```
-
-Matrix = cartesian product of all array values across `[generation]` and `[[prompts]]`. File paths resolve relative to the TOML file's parent directory.
-
-### Example: matrix sweep
-
-```toml
-[generation]
-model = ["claude-sonnet-4-6", "gpt-5-mini"]
-temperature = [0.0, 0.5, 1.0]
-
-[[prompts]]
-role = "system"
-file = ["strict.md", "relaxed.md"]
-
-[[prompts]]
-role = "user"
-file = "question.md"
+substitute = true                     # replace {{key}} placeholders with [vars] content
+separator = "\n---\n"                 # per-entry override (join point before this entry)
 
 [output]
 file = "results.jsonl"
 ```
 
-2 models × 3 temps × 2 system prompts = 12 runs. Per-run errors are recorded without aborting. Summary table prints to stderr after completion.
+Matrix = cartesian product of all array values across `[generation]` and `[[prompts]]`. File paths resolve relative to TOML parent dir. Above example: 2 models × 3 temps × 2 system files = 12 runs.
 
-Requires `ANTHROPIC_API_KEY` and/or `OPENAI_API_KEY` environment variables.
+Per-run errors are recorded without aborting. Summary table prints to stderr after completion. Requires `ANTHROPIC_API_KEY` and/or `OPENAI_API_KEY`.
