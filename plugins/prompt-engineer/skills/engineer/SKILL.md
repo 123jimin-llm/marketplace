@@ -1,6 +1,6 @@
 ---
 name: engineer
-description: This skill should be used when the user asks to "write a prompt", "shorten a prompt", "review my system prompt", "debug prompt output", "write a SKILL.md", "review my CLAUDE.md", or "write an AGENTS.md". Drafts, revises, and debugs LLM instructions and prompt artifacts.
+description: Draft, revise, and debug LLM prompts and prompt artifacts (system prompts, SKILL.md, CLAUDE.md, AGENTS.md). Trigger on prompt writing, shortening, reviewing, debugging, or any task where the output is instructions for another AI.
 ---
 
 # Prompt Engineering
