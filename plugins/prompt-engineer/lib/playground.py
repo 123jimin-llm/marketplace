@@ -4,7 +4,7 @@ import itertools
 import tomllib
 from pathlib import Path
 
-from util import split_frontmatter
+from util import split_frontmatter, toml_str
 
 
 def load_playground(pg_dir: Path) -> dict:
@@ -350,23 +350,14 @@ def _toml_value(value) -> str:
     elif isinstance(value, int):
         return str(value)
     elif isinstance(value, float):
-        # Use repr to preserve precision, but ensure it's valid TOML
         s = repr(value)
         if s == "inf":
             return "inf"
         return s
     elif isinstance(value, str):
-        return _toml_string(value)
+        return toml_str(value)
     elif isinstance(value, list):
         items = ", ".join(_toml_value(v) for v in value)
         return f"[{items}]"
     else:
         return repr(value)
-
-
-def _toml_string(s: str) -> str:
-    """Format a string as a TOML quoted string."""
-    # Use basic string with escapes
-    escaped = s.replace("\\", "\\\\").replace('"', '\\"')
-    escaped = escaped.replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
-    return f'"{escaped}"'

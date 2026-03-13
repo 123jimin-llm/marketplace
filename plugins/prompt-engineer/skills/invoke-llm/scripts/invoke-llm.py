@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
 
-from util import invoke_llm, read_input
+from util import invoke_llm, read_input, toml_str
 
 
 def collect_parts(strings, files):
@@ -25,24 +25,15 @@ def collect_parts(strings, files):
     return "\n\n".join(parts) if parts else None
 
 
-def _toml_str(s: str) -> str:
-    """Serialize a string as a TOML value (multiline if contains newlines)."""
-    if "\n" in s:
-        escaped = s.replace("\\", "\\\\").replace('"""', '""\\"')
-        return f'"""\n{escaped}"""'
-    escaped = s.replace("\\", "\\\\").replace('"', '\\"').replace("\t", "\\t").replace("\r", "\\r")
-    return f'"{escaped}"'
-
-
 def _result_to_toml(result: dict) -> str:
     """Serialize a single LLM result dict to a TOML document string."""
     lines = [
-        f"response = {_toml_str(result['response'])}",
-        f"model = {_toml_str(result['model'])}",
+        f"response = {toml_str(result['response'], multiline=True)}",
+        f"model = {toml_str(result['model'])}",
         f"input_tokens = {result['input_tokens']}",
         f"output_tokens = {result['output_tokens']}",
         f"latency_ms = {result['latency_ms']}",
-        f"stop_reason = {_toml_str(result['stop_reason'])}",
+        f"stop_reason = {toml_str(result['stop_reason'])}",
     ]
     return "\n".join(lines) + "\n"
 
@@ -52,21 +43,21 @@ def _results_to_toml(results: list) -> str:
     parts = []
     for r in results:
         labels = r["labels"]
-        label_items = ", ".join(f'{k} = {_toml_str(str(v))}' for k, v in labels.items())
+        label_items = ", ".join(f'{k} = {toml_str(str(v))}' for k, v in labels.items())
         lines = [
             "[[results]]",
             f"labels = {{{label_items}}}",
         ]
         if "error" in r:
-            lines.append(f"error = {_toml_str(r['error'])}")
+            lines.append(f"error = {toml_str(r['error'], multiline=True)}")
         else:
             lines += [
-                f"response = {_toml_str(r['response'])}",
-                f"model = {_toml_str(r['model'])}",
+                f"response = {toml_str(r['response'], multiline=True)}",
+                f"model = {toml_str(r['model'])}",
                 f"input_tokens = {r['input_tokens']}",
                 f"output_tokens = {r['output_tokens']}",
                 f"latency_ms = {r['latency_ms']}",
-                f"stop_reason = {_toml_str(r['stop_reason'])}",
+                f"stop_reason = {toml_str(r['stop_reason'])}",
             ]
         parts.append("\n".join(lines))
     return "\n\n".join(parts) + "\n"

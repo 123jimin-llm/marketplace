@@ -215,11 +215,6 @@ def matrix_dimensions(config: dict) -> dict:
             dim_name = f"{role}.{key}"
             dims[dim_name] = values
 
-    total = 1
-    for v in dims.values():
-        total *= len(v)
-    # Also multiply by fixed dimensions (count=1 each)
-    # Actually need total from expand_matrix logic
     total = len(models) * len(temps) * len(max_toks)
     for entry in prompts:
         key = "file" if "file" in entry else "prompt"

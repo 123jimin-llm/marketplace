@@ -88,6 +88,20 @@ def count_tokens(text: str, model: str) -> int:
         return len(enc.encode(text))
 
 
+def toml_str(s: str, *, multiline: bool = False) -> str:
+    """Serialize a string as a TOML value.
+
+    When multiline=True, strings containing newlines use triple-quoted literals.
+    Otherwise, newlines are escaped (safe default for config fields).
+    """
+    if multiline and "\n" in s:
+        escaped = s.replace("\\", "\\\\").replace('"""', '""\\"')
+        return f'"""\n{escaped}"""'
+    escaped = s.replace("\\", "\\\\").replace('"', '\\"')
+    escaped = escaped.replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
+    return f'"{escaped}"'
+
+
 def invoke_llm(
     user_message: str,
     *,
