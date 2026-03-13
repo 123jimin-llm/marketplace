@@ -13,16 +13,16 @@ A directory for evaluating and improving prompts against inputs.
 ```
 <playground>/
 ├── config.toml              # Generation and composition settings
-├── task.md                  # Goal, evaluation criteria, constraints
+├── task.md                  # Goal, evaluation criteria, constraints (free-form markdown)
 ├── prompts/
 │   └── <slot>/              # Named slot ("main", "system", "critic", …)
-│       ├── config.toml      # Slot config (default variation)
+│       ├── config.toml      # { default = "base" }
 │       └── <variation>.md   # Freeform name ("base", "concise", "v2")
 ├── inputs/
-│   └── <case>.md
+│   └── <case>.md            # One file per test case; stem = case name in outputs
 └── outputs/
     └── <run-label>/         # Human-chosen ("baseline", "concise-v2", …)
-        ├── run.toml         # Valid invoke-llm TOML — reproducible standalone
+        ├── run.toml         # Standalone invoke-llm TOML (see invoke-llm skill)
         └── <case>.md        # LLM output; YAML frontmatter for eval
 ```
 
@@ -39,10 +39,10 @@ temperature = 1.0
 max_tokens = 4096
 
 [composition]
-separator = "\n\n"   # default join between parts
-substitute = false   # when true, replace {{input}} in part text instead of appending
+separator = "\n\n"   # join between parts; inherited by each message
+substitute = false   # true → replace {{input}} in part text; "inputs" in parts becomes [vars]
 
-# Single-message mode (parts/role cannot coexist with [[composition.messages]]):
+# Single-message mode (cannot coexist with [[composition.messages]]):
 parts = ["prompts/main", "inputs"]
 # role = "user"      # default
 
@@ -57,90 +57,32 @@ parts = ["prompts/main", "inputs"]
 # substitute = true
 ```
 
-#### Composition
-
-Assembles prompt variations and inputs into LLM messages. Paths resolve relative to playground root; directories resolve to the selected variation/case at run time.
-
-- **`parts`** — ordered list of paths. `"inputs"` is reserved (resolves to current test case).
-- **`role`** — `"user"` (default) | `"system"` | `"assistant"`. Required in `[[composition.messages]]`.
-- **`separator`** — string between parts. Default `"\n\n"`.
-- **`substitute`** — replace `{{input}}` in part text with input content; `"inputs"` in `parts` is ignored.
-- Root-level `separator` and `substitute` are defaults inherited by each message.
-- `parts`/`role` (single message) and `[[composition.messages]]` cannot coexist.
-
-### task.md
-
-Free-form markdown: goal, evaluation criteria, constraints.
-
-### Prompts
-
-Each slot has a `config.toml`:
-
-```toml
-default = "base"
-```
+Paths resolve relative to playground root. Directory paths (e.g., `"prompts/main"`) resolve to the selected variation at run time. `"inputs"` resolves to the current test case.
 
 ### Frontmatter
 
-Prompts, inputs, and outputs support optional YAML frontmatter (all fields optional).
+All `.md` files support optional YAML frontmatter. Frontmatter is stripped before LLM calls.
 
-`prompts/*/*.md` and `inputs/*.md`:
-
-```yaml
----
-comments: Free-form note on purpose or intent.
----
-```
-
-`outputs/*/*.md`:
-
-```yaml
----
-score: 4
-comments: Good structure but too verbose in paragraph 2.
----
-```
-
-Scale and criteria come from `task.md`. Default: 1–5.
-
-### Inputs
-
-One file per test case. Filename (without extension) = case name in outputs.
+- `prompts/*/*.md`, `inputs/*.md`: `comments:` (free-form note).
+- `outputs/*/*.md`: `score:` (1–5, scale/criteria from `task.md`), `comments:`.
 
 ## Run
 
-Generate invoke-llm TOML configs from playground composition, then execute.
-
-1. Read playground `config.toml` + each slot's `config.toml` (for default variations).
-2. Determine scope from user request — which variations, which inputs. Default: all inputs, default variation per slot.
-3. For each (variation-combo, input) pair, generate an invoke-llm TOML:
-   - `[generation]` — copy from playground config (include `separator` if non-default).
-   - Map `[composition]` parts → `[[prompts]]` entries (slot dirs → selected variation files).
-   - `substitute = false`: add input as a separate `[[prompts]]` entry.
-   - `substitute = true`: set `[vars].input` to the input file path, set `substitute = true` on the template entry.
-4. Ask user for a run-label.
-5. Execute: `invoke-llm.py -c <toml> --json`
-6. Write `outputs/<run-label>/<case>.md` and `outputs/<run-label>/run.toml`.
-
-`run.toml` example with substitute:
-
-```toml
-[generation]
-model = "claude-sonnet-4-6"
-temperature = 1.0
-max_tokens = 4096
-
-[vars]
-input = "inputs/case1.md"
-
-[[prompts]]
-role = "user"
-file = "prompts/main/base.md"
-substitute = true
+```
+scripts/playground-run.py <playground-dir> -l <run-label> [-v SLOT=VAR,...] [-i PATTERN] [--dry-run] [--json]
 ```
 
-Multiple variations in one run: include variation in filename or use subdirectories under `outputs/<run-label>/`.
+| Flag | Description |
+|------|-------------|
+| `<playground-dir>` | Positional. Path to playground root. |
+| `-l` / `--label` | Run label. Required unless `--dry-run`. |
+| `-v` / `--variation` | Slot variations. Repeatable. `-v main=base,concise` sweeps both. `-v main=*` sweeps all `.md` in slot. Omitted slots use default. |
+| `-i` / `--inputs` | Filter inputs by name pattern. Default: all. |
+| `--dry-run` | Print generated TOMLs to stdout, don't execute. |
+| `--json` | Include metadata (tokens, latency) in output frontmatter. |
+
+**Output:** Single combo → `outputs/<label>/<case>.md` + `run.toml`. Multiple combos → `outputs/<label>/<combo-label>/` subdirs.
 
 ## Evaluate
 
-Score outputs by editing their YAML frontmatter (see Frontmatter above).
+Score outputs by editing their YAML frontmatter (`score:`, `comments:`).
