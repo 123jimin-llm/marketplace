@@ -93,6 +93,8 @@ def invoke_llm(
         resp = Anthropic().messages.create(**kwargs)
         elapsed = (time.perf_counter() - start) * 1000
 
+        if not resp.content or not hasattr(resp.content[0], "text"):
+            raise ValueError(f"Unexpected response content: {resp.content!r}")
         return {
             "response": resp.content[0].text,
             "model": resp.model,
@@ -116,8 +118,12 @@ def invoke_llm(
             messages=messages,
         )
         elapsed = (time.perf_counter() - start) * 1000
-        choice = resp.choices[0]
 
+        if not resp.choices:
+            raise ValueError("No choices in OpenAI response")
+        choice = resp.choices[0]
+        if choice.message.content is None:
+            raise ValueError("No content in OpenAI response message")
         return {
             "response": choice.message.content,
             "model": resp.model,

@@ -111,14 +111,22 @@ def _resolve_part(part: str, pg_config: dict, variation_combo: dict[str, str],
         if slot_name in slots:
             variation = variation_combo.get(slot_name, slots[slot_name]["default"])
             resolved = pg_dir / "prompts" / slot_name / f"{variation}.md"
-            text = resolved.read_text(encoding="utf-8")
+            try:
+                text = resolved.read_text(encoding="utf-8")
+            except FileNotFoundError:
+                raise FileNotFoundError(
+                    f"Slot '{slot_name}' variation '{variation}' not found: {resolved}"
+                )
             _, _, body = split_frontmatter(text)
             rel_path = resolved.relative_to(pg_dir)
             return body, rel_path
 
     # Direct file path
     resolved = pg_dir / part
-    text = resolved.read_text(encoding="utf-8")
+    try:
+        text = resolved.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Prompt file not found: {resolved}")
     _, _, body = split_frontmatter(text)
     rel_path = Path(part)
     return body, rel_path

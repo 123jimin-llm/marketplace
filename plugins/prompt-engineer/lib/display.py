@@ -18,7 +18,8 @@ def collect_inputs(
         items.append((label, s))
     for path in files or []:
         try:
-            text = open(path, encoding="utf-8").read()
+            with open(path, encoding="utf-8") as f:
+                text = f.read()
         except FileNotFoundError:
             print(f"File not found: {path}", file=sys.stderr)
             sys.exit(1)
@@ -38,6 +39,8 @@ def render_table(
         columns: Column header names.
         separator_before: If set, print a separator line before this row index.
     """
+    if not rows:
+        return
     label_width = max(len(row[0]) for row in rows)
     col_widths = [max(len(c), 7) for c in columns]
 
