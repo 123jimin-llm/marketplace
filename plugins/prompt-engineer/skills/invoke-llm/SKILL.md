@@ -1,27 +1,9 @@
 ---
-name: tools
-description: Use when the user asks to count tokens, measure prompt length, check token usage, run a prompt against an LLM, or test a prompt.
+name: invoke-llm
+description: Use when the user asks to run a prompt against an LLM or test a prompt.
 ---
 
-# Prompt Tools
-
-## Token Count
-
-Count tokens for a string or file. Report the result to the user.
-
-```bash
-python scripts/token-count.py "text"
-python scripts/token-count.py -f path/to/file.md
-python scripts/token-count.py -f path/to/SKILL.md -s
-```
-
-| Flag | Description |
-|------|-------------|
-| `-f` | Treat input as a file path |
-| `-s` | Per-section breakdown (YAML frontmatter + `##` headings). Use when the user wants to find which sections are expensive |
-| `-m MODEL` | Model or encoding to count against. Accepts Claude models (`claude-opus-4-6`), OpenAI models (`gpt-5-mini`), or tiktoken encodings (`cl100k_base`). Default: `claude-opus-4-6` |
-
-## Prompt Run
+# Invoke LLM
 
 Run a prompt against an LLM. Prints the response to stdout, or JSON with metadata when `--json` is used.
 
@@ -60,4 +42,4 @@ python scripts/invoke-llm.py -U prompt.md -m gpt-5-mini -t 0.0 --json
 
 ## Dependencies
 
-See `scripts/requirements.txt`. Assume all packages are pre-installed.
+See `../../lib/requirements.txt`. Assume all packages are pre-installed.

@@ -4,6 +4,9 @@
 import argparse
 import json
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
 
 from util import invoke_llm, read_input
 
@@ -77,7 +80,7 @@ def main():
     )
     args = parser.parse_args()
 
-    # Build user message: positional first, then -u strings, then -f files
+    # Build user message: positional first, then -u strings, then -U files
     user_strings = []
     if args.input:
         user_strings.append(args.input)
@@ -85,7 +88,7 @@ def main():
     user_message = collect_parts(user_strings, args.user_files)
 
     if not user_message:
-        print("No user prompt provided. Use positional arg, -u, or -f.", file=sys.stderr)
+        print("No user prompt provided. Use positional arg, -u, or -U.", file=sys.stderr)
         sys.exit(1)
 
     # Build system message: -s strings, then -S files
