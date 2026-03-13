@@ -7,6 +7,8 @@ description: "Run prompts against LLMs. Trigger on: test/send/invoke a prompt, g
 
 Script: `scripts/invoke-llm.py`
 
+Calls raw LLM APIs (text in, text out). No tool use, no agent context, no skills. To test agent-level behavior, use a separate Claude Code session.
+
 ## Single-shot mode
 
 ```bash
