@@ -28,6 +28,7 @@ Only non-discoverable information — things not obtainable from repo contents a
 
 - Architectural intent, design rationale, non-obvious component relationships.
 - Tooling gotchas, non-obvious conventions, operational landmines, external references.
+- When tools are involved, state whether End AI defaults to acting or informing — this is not inferred from context.
 - NOT directory layout, tech stack, or other repo-inferable facts.
 
 Mark plans distinctly from current-state descriptions (e.g., `TODO`/`PLANNED` labels, or a dedicated section).

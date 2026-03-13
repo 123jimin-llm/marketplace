@@ -36,6 +36,16 @@ Empirical observations from iterative prompt engineering work. For self-improvem
 
 **13. Tool use defaults must be set explicitly.** Whether the AI defaults to acting or informing is not reliably inferred from context. When a prompt involves tools, state the default posture directly.
 
+## Editing This Skill
+
+**14. The skill editor will violate the skill's own principles.** Writing "use hierarchy not bold for emphasis" then using bold for emphasis in the same document. Knowing a principle and applying it to your own output are separate capabilities. Cold-read the skill itself after every revision.
+
+**15. Abstract jargon is false compression.** Terms like "experiential output" or "prompt artifacts" compress efficiently for the author but are ambiguous without authorial context. This is distinct from #8 — the token count drops but misinterpretation rises. Test every compressed term: can it be parsed correctly by a reader who did not write it?
+
+**16. Fixing ambiguity overcorrects into over-constraint.** Replacing a vague category with a concrete enumeration narrows scope past intent. The fix for ambiguity is the right level of specificity, not maximum specificity.
+
+**17. Token economy applies to markup, not just content.** `[foo](foo)` is identical to `<foo>`. Editors reviewing at the sentence level miss formatting-level waste. Audit markup as tokens.
+
 ## Open Questions
 
 - Hierarchical grouping: most effective way to communicate hierarchy in prompts? Candidates: XML tags, Markdown headers, indentation, numbered nesting. May differ by model family or context window position.
