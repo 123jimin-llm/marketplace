@@ -20,7 +20,6 @@ TREE: list[tuple[str, str | None]] = [
     ("plan", "plan"),
     ("spec", "spec"),
     ("tag", "tag"),
-    ("script", "script"),
     ("archive", "archive"),
     ("archive/task", None),
     ("archive/plan", None),

@@ -18,7 +18,6 @@ worklog/
 ├── plan/              # Future-facing designs (subfolders)
 ├── spec/              # Current-state behavioral truths (flat files)
 ├── tag/               # Tag definitions (one file per tag)
-├── script/            # Project-specific scripts
 └── archive/           # Write-only graveyard
     ├── task/
     └── plan/
