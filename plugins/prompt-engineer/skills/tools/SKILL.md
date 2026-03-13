@@ -1,6 +1,7 @@
 ---
 name: tools
 description: Use when the user asks to count tokens, measure prompt length, or check token usage for a string or file.
+allowed-tools: Bash(python scripts/*.py*)
 ---
 
 # Prompt Tools
