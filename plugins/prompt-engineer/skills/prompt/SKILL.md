@@ -1,6 +1,6 @@
 ---
 name: prompt
-description: Draft, revise, and debug LLM prompts and prompt artifacts (system prompts, SKILL.md, CLAUDE.md, AGENTS.md). Trigger on prompt writing, shortening, reviewing, debugging, or any task where the output is instructions for another AI.
+description: Draft, revise, and debug LLM prompts and prompt artifacts. MUST trigger when editing/optimizing/reviewing SKILL.md, CLAUDE.md, AGENTS.md, system prompts, or any file whose audience is an AI.
 ---
 
 # Prompt Engineering
@@ -8,23 +8,21 @@ description: Draft, revise, and debug LLM prompts and prompt artifacts (system p
 ## Terms
 
 - **Prompt**: Directives for End AI.
-- **Dev AI**: AI drafting Prompt from human intent.
-- **End AI**: AI executing Prompt. No shared context with Dev AI.
+- **End AI**: AI executing Prompt. No shared context with the author.
 - **Baseline**: What End AI produces unprompted.
-- **Performance**: How well End AI output matches intent.
 
 ## Process
 
 1. **Baseline** — run the task with minimal or no Prompt. Note divergences from intent.
-2. **Draft** — add only what moves End AI toward intent. Load <references/creative.md> for fiction, roleplay, or persona work, or <references/artifacts.md> for files that contain prompts, before drafting.
-3. **Cold-read** — re-read Prompt as End AI, without authorial context. Every term, abbreviation, and compressed phrase that depends on Dev AI's intent to parse correctly will be misinterpreted.
+2. **Draft** — add only what moves End AI toward intent. Load <references/creative.md> for fiction, roleplay, or persona work, or <references/artifacts.md> for SKILL.md, CLAUDE.md, AGENTS.md, and system prompts, before drafting.
+3. **Cold-read** — re-read Prompt as End AI, without authorial context. Every term, abbreviation, and compressed phrase that depends on the author's intent to parse correctly will be misinterpreted.
 4. **Test** — minimum three diverse scenarios. Revise Prompt, then stop when marginal gain < marginal complexity.
 
 ## Principles
 
-Ordered by impact. Priority: **Performance >= Meaning > Length**.
+Ordered by impact. Priority: **Correctness >= Meaning > Length**.
 
-1. Removing Baseline-restating or redundant instructions improves output — noise dilutes attention, including in markup and formatting. When in doubt, cut.
+1. Remove Baseline-restating and redundant instructions — noise dilutes attention, including in markup and formatting. When in doubt, cut.
 2. Define intended outcome, not output format. Describe viewpoint and knowledge End AI needs, not role labels. Supply only what End AI would guess or miss.
 3. Use imperative verbs ("Emit structured logs"), not declarations ("Structured logging is preferred").
 4. State concrete reasons ("Output is parsed by CI"). End AI generalizes better from concrete rationale.

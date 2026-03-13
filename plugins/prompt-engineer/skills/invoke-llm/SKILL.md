@@ -1,13 +1,9 @@
 ---
 name: invoke-llm
-description: This skill should be used when the user asks to run a prompt against an LLM, invoke Claude or OpenAI, test a prompt, get a completion, compose prompts from files, run a matrix sweep, or batch-test prompts across models/temperatures.
+description: Run prompts against LLMs. Trigger on: test/send/invoke a prompt, get a completion, compare models, matrix sweep, batch-test prompts.
 ---
 
 # Invoke LLM
-
-Run a prompt against an LLM. Prints the response to stdout, or JSON with metadata when `--json` is used.
-
-All prompt flags are repeatable; multiple values are joined with double newlines. Write prompts to files, then invoke with `-U`/`-S`.
 
 Script: `scripts/invoke-llm.py`
 
@@ -34,9 +30,9 @@ invoke-llm.py -U prompt.md -m gpt-5-mini -t 0.0 --json
 | `-o FILE` | Write output to file (still prints to stdout) |
 | `--json` | JSON output with metadata (response, model, tokens, latency, stop_reason) |
 
-## TOML config mode
+Repeatable flags are joined with double newlines. When combining `-u`/`-U` (or `-s`/`-S`), strings come before file contents.
 
-Use `-c` with a TOML file for cleaner invocation and matrix sweeps across models, temperatures, and prompt variations.
+## TOML config mode
 
 ```bash
 invoke-llm.py -c run.toml                   # run from config
@@ -44,17 +40,14 @@ invoke-llm.py -c run.toml --dry-run         # print matrix shape, don't execute
 invoke-llm.py -c run.toml --json            # JSONL output to stdout
 ```
 
-| Flag | Description |
-|------|-------------|
-| `-c FILE` | TOML config file. Mutually exclusive with positional, `-u`, `-U`, `-s`, `-S`, `-m`, `-t`, `--max-tokens` |
-| `--dry-run` | Print matrix dimensions and total run count without executing (requires `-c`) |
+`-c` is mutually exclusive with single-shot flags. `--dry-run` requires `-c`.
 
 ### TOML schema
 
 ```toml
 [generation]
 model = "claude-sonnet-4-6"          # scalar = fixed, array = sweep
-temperature = 1.0
+temperature = 1.0                     # array → sweep dimension
 max_tokens = 4096
 
 [[prompts]]
@@ -62,42 +55,15 @@ role = "system"                       # "system" or "user"
 file = ["strict.md", "relaxed.md"]    # array = sweep dimension
 # OR: prompt = "inline text"          # file and prompt are mutually exclusive
 
-[[prompts]]
-role = "user"
-file = "context.md"                   # multiple entries with same role = concatenation
-
-[[prompts]]
+[[prompts]]                           # multiple same-role entries = concatenation
 role = "user"
 file = "question.md"
 
 [output]
-file = "results.jsonl"                # optional, JSONL output
+file = "results.jsonl"                # optional JSONL output
 ```
 
-**Rules:**
-
-- `[generation]`: scalar = fixed value, array = sweep dimension. Cartesian product of all arrays.
-- `[[prompts]]`: each entry has `role` + exactly one of `file` or `prompt`. Multiple entries with the same role are concatenated (double newline). Array value in `file`/`prompt` = sweep dimension.
-- `[output]`: optional. If `file` is set, write JSONL there.
-- File paths are relative to the TOML file's parent directory.
-
-**Matrix = cartesian product of:** `model[]` × `temperature[]` × each `[[prompts]]` entry's array values.
-
-### Example: single run via TOML
-
-```toml
-[generation]
-model = "claude-sonnet-4-6"
-temperature = 0.5
-
-[[prompts]]
-role = "system"
-file = "system.md"
-
-[[prompts]]
-role = "user"
-file = "question.md"
-```
+Matrix = cartesian product of all array values across `[generation]` and `[[prompts]]`. File paths resolve relative to the TOML file's parent directory.
 
 ### Example: matrix sweep
 
@@ -118,14 +84,6 @@ file = "question.md"
 file = "results.jsonl"
 ```
 
-This produces 2 × 3 × 2 = 12 runs. Each result is written as a JSONL line:
+2 models × 3 temps × 2 system prompts = 12 runs. Per-run errors are recorded without aborting. Summary table prints to stderr after completion.
 
-```json
-{"labels":{"model":"claude-sonnet-4-6","temperature":0.5,"system":"strict.md","user":"question.md"},"response":"...","model":"claude-sonnet-4-6","input_tokens":142,"output_tokens":387,"latency_ms":1204,"stop_reason":"end_turn"}
-```
-
-A summary table is printed to stderr after all runs complete.
-
-## Dependencies
-
-`anthropic`, `openai` — assume pre-installed.
+Requires `ANTHROPIC_API_KEY` and/or `OPENAI_API_KEY` environment variables.

@@ -6,11 +6,11 @@ Guidance for writing specific types of prompt-adjacent files.
 
 Empirical findings on prompt fragments that are injected into every conversation (system prompts, AGENTS.md, CLAUDE.md, skill descriptions, etc.):
 
-- **Redundancy hurts.** Content restating what End AI already knows or can discover from existing sources (docs, code, READMEs) increases reasoning tokens 10-22% without improving outcomes. When existing documentation is removed, the same content helps — proving the harm comes from duplication, not the content itself.
-- **Overviews are inert.** Codebase summaries, architectural overviews, and broad style guides do not measurably improve End AI navigation or task completion. End AI does not reach relevant files faster with them.
-- **Instructions add compliance overhead.** Every directive in always-included content competes for End AI's reasoning budget. Extra instructions produce more tool calls, more file traversal, and more reasoning tokens — making tasks harder, not easier.
-- **Only non-discoverable, task-critical content earns inclusion.** Repo-specific tooling requirements, non-obvious test commands, operational landmines. Short, human-written, and pruned aggressively.
-- **Auto-generation is net-negative.** LLM-generated always-included content reduces success rates in most settings. Human-written content marginally helps — but only when minimal.
+- **Redundancy hurts.** Content restating what End AI already knows increases reasoning tokens 10-22% without improving outcomes. When existing documentation is removed, the same content helps — the harm is duplication, not the content itself.
+- **Overviews are inert.** Codebase summaries, architectural overviews, and broad style guides do not help End AI reach relevant files faster or complete tasks better.
+- **Instructions add compliance overhead.** Every directive competes for End AI's reasoning budget — producing more tool calls, more file traversal, and more reasoning tokens.
+- **Auto-generation is net-negative.** LLM-generated always-included content reduced success rates in 5/8 tested settings and increased cost 20-23%. Human-written content improved success +4% — but only when minimal.
+- **Include only non-discoverable, task-critical content.** Repo-specific tooling requirements, non-obvious test commands, operational landmines. Short, human-written, pruned aggressively.
 
 ## AGENTS.md Files
 
@@ -24,7 +24,7 @@ Repo-embedded prompt fragments scoped by directory.
 
 ### Content
 
-Only non-discoverable information — things not obtainable from repo contents alone:
+Include only non-discoverable information — things not obtainable from repo contents alone:
 
 - Architectural intent, design rationale, non-obvious component relationships.
 - Tooling gotchas, non-obvious conventions, operational landmines, external references.
@@ -37,15 +37,10 @@ When a subdirectory has its own `AGENTS.md`, list its path and brief purpose in 
 
 ### Empirical Evidence
 
-Research ("Evaluating AGENTS.md", ICML) tested context files across multiple coding agents:
+From "Evaluating AGENTS.md" (ICML) — findings not already covered in Always-Included Content:
 
-- LLM-generated context files reduced success rates in 5/8 settings and increased cost 20-23%.
-- Developer-written files improved success +4% on average but still increased steps and cost.
-- Codebase overviews — present in ~100% of auto-generated files — did not help agents reach relevant files faster.
 - Tool/command mentions in context files dramatically increased usage of those tools, even when unnecessary.
-- When all other documentation was removed, auto-generated files did help (+2.7%) — confirming the harm is from duplication, not content.
-
-Takeaway: minimal human-written context covering only repo-specific requirements (tooling, test commands) outperforms comprehensive auto-generated overviews.
+- Developer-written files improved success +4% but still increased steps and cost — confirming that even helpful content has overhead.
 
 ### Maintenance
 

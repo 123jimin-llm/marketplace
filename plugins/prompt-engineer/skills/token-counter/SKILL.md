@@ -1,11 +1,9 @@
 ---
 name: token-counter
-description: This skill should be used when the user asks to count tokens, measure prompt length, check token usage, compare token counts across models, or get a per-section token breakdown.
+description: Count tokens in strings or files. Trigger on: how many tokens, measure prompt length, context window fit, token budget, per-section breakdown.
 ---
 
 # Token Counter
-
-Count tokens for strings and/or files. Accepts multiple inputs and models — prints a comparison table when there's more than one.
 
 Script: `scripts/token-count.py`
 
@@ -19,11 +17,9 @@ token-count.py -f SKILL.md -s
 
 | Flag | Description |
 |------|-------------|
-| (positional) | Strings to count tokens for (repeatable) |
-| `-f FILE` | File path to count (repeatable) |
-| `-m MODEL` | Model or encoding (repeatable). Accepts Claude models (`claude-opus-4-6`), OpenAI models (`gpt-5-mini`), or tiktoken encodings (`cl100k_base`). Default: `claude-opus-4-6` |
-| `-s` | Per-section breakdown (YAML frontmatter + `##` headings). Use when the user wants to find which sections are expensive |
+| (positional) | Strings to count (repeatable) |
+| `-f FILE` | File to count (repeatable) |
+| `-m MODEL` | Model or tiktoken encoding (repeatable). Default: `claude-opus-4-6` |
+| `-s` | Per-section breakdown (YAML frontmatter + `##` headings) |
 
-## Dependencies
-
-`anthropic`, `openai`, `tiktoken` — assume pre-installed.
+Multiple inputs or models print a comparison table.
