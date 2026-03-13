@@ -6,17 +6,17 @@ description: Scaffold prompt playgrounds; test variations across inputs, score o
 
 # Playground
 
-A directory for evaluating and improving prompts against inputs. One playground = one task.
+A directory for evaluating and improving prompts against inputs.
 
 ## Structure
 
 ```
 <playground>/
-├── config.toml              # Generation defaults
+├── config.toml              # Generation and composition settings
 ├── task.md                  # Goal, evaluation criteria, constraints
 ├── prompts/
 │   └── <slot>/              # Named slot ("main", "system", "critic", …)
-│       ├── config.toml      # Slot config
+│       ├── config.toml      # Slot config (default variation)
 │       └── <variation>.md   # Freeform name (e.g., "base", "concise", "v2")
 ├── inputs/
 │   └── <case>.md
@@ -61,12 +61,12 @@ parts = ["prompts/main", "inputs"]
 
 Assembles prompt variations and inputs into LLM messages. Paths resolve relative to playground root; directories resolve to the selected variation/case at run time.
 
-- **`parts`** — ordered list of paths. `"inputs"` is reserved and resolves to the current test case.
-- **`role`** — message role (`"user"`, `"system"`, `"assistant"`). Defaults to `"user"` at root level; required in `[[composition.messages]]`.
-- **`separator`** — string inserted between parts. Default `"\n\n"`.
-- **`substitute`** — when `true`, `{{input}}` placeholders in part text are replaced with input content and `"inputs"` in `parts` is ignored.
+- **`parts`** — ordered list of paths. `"inputs"` is reserved (resolves to current test case; do not use as a prompt slot name).
+- **`role`** — `"user"` (default at root) | `"system"` | `"assistant"`. Required in `[[composition.messages]]`.
+- **`separator`** — string between parts. Default `"\n\n"`.
+- **`substitute`** — replace `{{input}}` in part text with input content; `"inputs"` in `parts` is ignored.
 - Root-level `separator` and `substitute` are defaults inherited by each message.
-- `[composition]` with `parts`/`role` = single message. Use `[[composition.messages]]` for multi-message; the two forms cannot coexist.
+- `parts`/`role` (single message) and `[[composition.messages]]` cannot coexist.
 
 ### task.md
 
@@ -74,43 +74,25 @@ Free-form markdown: goal, evaluation criteria, constraints.
 
 ### Prompts
 
-Plain markdown. Assembly with inputs is controlled by `[composition]`. `"inputs"` is reserved — do not use it as a prompt slot name.
-
-Each slot has a `config.toml` specifying the default variation used in runs:
+Each slot has a `config.toml`:
 
 ```toml
 default = "base"
 ```
 
-Prompts, inputs, and outputs support optional YAML frontmatter. All fields are optional.
+### Frontmatter
 
-`prompts/*/*.md`:
+Prompts, inputs, and outputs support optional YAML frontmatter (all fields optional).
 
-```yaml
----
-comments: Why this variation exists or what it tries differently.
----
-```
-
-### Inputs
-
-One file per test case. Filename (without extension) = case name in outputs.
-
-`inputs/*.md`:
+`prompts/*/*.md` and `inputs/*.md`:
 
 ```yaml
 ---
-comments: What this case tests or why it's interesting.
+comments: Free-form note on purpose or intent.
 ---
 ```
 
-## Run
-
-(TODO)
-
-## Evaluate
-
-Score output files by adding YAML frontmatter:
+`outputs/*/*.md`:
 
 ```yaml
 ---
@@ -120,6 +102,18 @@ comments: Good structure but too verbose in paragraph 2.
 ```
 
 Scale and criteria come from `task.md`. Default: 1–5.
+
+### Inputs
+
+One file per test case. Filename (without extension) = case name in outputs.
+
+## Run
+
+(TODO)
+
+## Evaluate
+
+Score outputs by editing their YAML frontmatter (see Frontmatter above).
 
 ## Compare
 
