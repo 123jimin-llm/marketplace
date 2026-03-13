@@ -1,26 +1,20 @@
 ---
 name: token-counter
-description: Use when the user asks to count tokens, measure prompt length, or check token usage.
+description: This skill should be used when the user asks to count tokens, measure prompt length, check token usage, compare token counts across models, or get a per-section token breakdown.
 ---
 
 # Token Counter
 
 Count tokens for strings and/or files. Accepts multiple inputs and models — prints a comparison table when there's more than one.
 
+Script: `scripts/token-count.py`
+
 ```bash
-# Single string or file
-python scripts/token-count.py "some text"
-python scripts/token-count.py -f prompt.md
-
-# Multiple strings and files, mixed freely
-python scripts/token-count.py "v1 prompt" "v2 prompt" -f base.md
-
-# Cross with multiple models
-python scripts/token-count.py "v1" "v2" -f base.md -m claude-opus-4-6 -m gpt-5-mini
-
-# Section breakdown (single file)
-python scripts/token-count.py -f SKILL.md -s
-python scripts/token-count.py -f SKILL.md -s -m claude-opus-4-6 -m gpt-5-mini
+token-count.py "some text"
+token-count.py -f prompt.md
+token-count.py "v1" "v2" -f base.md
+token-count.py "v1" "v2" -m claude-opus-4-6 -m gpt-5-mini
+token-count.py -f SKILL.md -s
 ```
 
 | Flag | Description |
@@ -32,4 +26,4 @@ python scripts/token-count.py -f SKILL.md -s -m claude-opus-4-6 -m gpt-5-mini
 
 ## Dependencies
 
-See `../../lib/requirements.txt`. Assume all packages are pre-installed.
+`anthropic`, `openai`, `tiktoken` — assume pre-installed.

@@ -25,6 +25,93 @@ def collect_parts(strings, files):
     return "\n\n".join(parts) if parts else None
 
 
+def run_matrix(config_path, dry_run, json_output):
+    """Run a TOML-configured matrix of LLM invocations."""
+    from matrix import load_config, expand_matrix, matrix_dimensions
+    from display import render_table
+
+    config = load_config(config_path)
+    output_file = config.get("output", {}).get("file")
+
+    if dry_run:
+        info = matrix_dimensions(config)
+        print(f"Total runs: {info['total_runs']}")
+        if info["dimensions"]:
+            print("\nSweep dimensions:")
+            for dim, values in info["dimensions"].items():
+                print(f"  {dim}: {values}")
+        else:
+            print("No sweep dimensions (single run)")
+        return
+
+    runs = expand_matrix(config)
+    results = []
+
+    for i, spec in enumerate(runs):
+        labels = spec["labels"]
+        label_str = ", ".join(f"{k}={v}" for k, v in labels.items())
+        print(f"[{i+1}/{len(runs)}] {label_str}", file=sys.stderr)
+
+        try:
+            result = invoke_llm(
+                spec["user_message"],
+                system=spec["system"],
+                model=spec["model"],
+                temperature=spec["temperature"],
+                max_tokens=spec["max_tokens"],
+            )
+            record = {"labels": labels, **result}
+        except Exception as e:
+            print(f"  ERROR: {e}", file=sys.stderr)
+            record = {"labels": labels, "error": str(e)}
+
+        results.append(record)
+
+    # Write JSONL output file if configured
+    if output_file:
+        base_dir = config["_base_dir"]
+        out_path = base_dir / output_file
+        with open(out_path, "w", encoding="utf-8") as f:
+            for r in results:
+                f.write(json.dumps(r) + "\n")
+        print(f"\nResults written to {out_path}", file=sys.stderr)
+
+    # JSON/JSONL to stdout
+    if json_output:
+        for r in results:
+            print(json.dumps(r))
+    else:
+        # Print summary table
+        columns = ["model", "temp", "in_tok", "out_tok", "latency", "stop"]
+        rows = []
+        for r in results:
+            labels = r["labels"]
+            # Build row label from prompt labels
+            parts = []
+            if "system" in labels:
+                parts.append(labels["system"])
+            parts.append(labels["user"])
+            row_label = "  ".join(parts) if len(parts) > 1 else parts[0]
+
+            if "error" in r:
+                rows.append((row_label, labels["model"], str(labels["temperature"]),
+                             "-", "-", "-", "ERROR"))
+            else:
+                rows.append((
+                    row_label,
+                    r["model"],
+                    str(labels["temperature"]),
+                    str(r["input_tokens"]),
+                    str(r["output_tokens"]),
+                    str(r["latency_ms"]),
+                    r["stop_reason"],
+                ))
+
+        if rows:
+            print(file=sys.stderr)
+            render_table(rows, columns)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -78,7 +165,41 @@ def main():
         dest="json_output",
         help="Output JSON with metadata",
     )
+    parser.add_argument(
+        "-c", "--config",
+        help="TOML config file for matrix/batch runs",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print matrix dimensions without executing (requires -c)",
+    )
     args = parser.parse_args()
+
+    # Validate --dry-run requires -c
+    if args.dry_run and not args.config:
+        parser.error("--dry-run requires -c/--config")
+
+    # TOML config mode
+    if args.config:
+        # Check mutual exclusivity with single-shot flags
+        single_shot_used = any([
+            args.input, args.user_strings, args.user_files,
+            args.system_strings, args.system_files,
+        ])
+        non_default = (args.model != "claude-sonnet-4-6" or
+                       args.temperature != 1.0 or
+                       args.max_tokens != 4096)
+        if single_shot_used or non_default:
+            parser.error("-c/--config is mutually exclusive with positional, -u, -U, -s, -S, -m, -t, --max-tokens")
+
+        if args.output:
+            print("Warning: -o ignored in config mode (use [output].file in TOML)", file=sys.stderr)
+
+        run_matrix(args.config, args.dry_run, args.json_output)
+        return
+
+    # --- Single-shot mode (unchanged) ---
 
     # Build user message: positional first, then -u strings, then -U files
     user_strings = []

@@ -51,10 +51,10 @@ One file per test case. Filename (without extension) = case name in outputs.
 
 ## Run
 
-For each (prompt-combination × input), invoke `invoke-llm.py` from the `invoke-llm` skill:
+For each (prompt-combination × input), invoke the `invoke-llm` skill's script. Resolve `PLUGIN_ROOT` to the absolute path of the `prompt-engineer` plugin directory.
 
 ```bash
-python ../../invoke-llm/scripts/invoke-llm.py \
+python PLUGIN_ROOT/skills/invoke-llm/scripts/invoke-llm.py \
   -S prompts/system/<variation>.md \
   -U prompts/main/<variation>.md \
   -U inputs/<case>.md \
