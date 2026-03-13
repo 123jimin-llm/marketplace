@@ -261,9 +261,9 @@ class TestBuildRunSpecSingleMessage:
                 parts = ["prompts/main", "inputs"]
             """),
             slots={"main": {"default": "base", "variations": {
-                "base": "---\ncomments: This is a note.\n---\nActual prompt text."
+                "base": '+++\ncomments = "This is a note."\n+++\nActual prompt text.'
             }}},
-            inputs={"case1": "---\ncomments: Input note.\n---\nInput body."},
+            inputs={"case1": '+++\ncomments = "Input note."\n+++\nInput body.'},
         )
         pg = load_playground(tmp_path)
         spec = build_run_spec(pg, {"main": "base"}, pg["inputs"][0])

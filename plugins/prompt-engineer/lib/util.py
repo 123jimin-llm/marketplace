@@ -5,16 +5,20 @@ import time
 
 
 def split_frontmatter(text: str) -> tuple[str, str, str]:
-    """Split YAML frontmatter from body. Returns (description, frontmatter, body)."""
-    m = re.match(r"^---\n(.*?\n)---\n?", text, re.DOTALL)
-    if not m:
-        return "", "", text
-    fm = m.group(1)
-    desc = ""
-    dm = re.search(r"^description:\s*(.+)$", fm, re.MULTILINE)
-    if dm:
-        desc = dm.group(1).strip()
-    return desc, fm, text[m.end():]
+    """Split frontmatter from body. Supports TOML (+++) and YAML (---) delimiters.
+
+    Returns (description, frontmatter, body).
+    """
+    for delim in ("+++", "---"):
+        m = re.match(rf"^{re.escape(delim)}\n(.*?\n){re.escape(delim)}\n?", text, re.DOTALL)
+        if m:
+            fm = m.group(1)
+            desc = ""
+            dm = re.search(r"^description\s*[=:]\s*(.+)$", fm, re.MULTILINE)
+            if dm:
+                desc = dm.group(1).strip().strip('"\'')
+            return desc, fm, text[m.end():]
+    return "", "", text
 
 
 def split_sections(text: str) -> list[tuple[str, str]]:
