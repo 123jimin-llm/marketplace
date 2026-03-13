@@ -18,7 +18,7 @@ def main():
     parser.add_argument(
         "-m", "--model",
         default="claude-opus-4-6",
-        help="Claude model (claude-opus-4-6), OpenAI model (gpt-4o), or tiktoken encoding (cl100k_base)",
+        help="Claude model (claude-opus-4-6), OpenAI model (gpt-5-mini), or tiktoken encoding (cl100k_base)",
     )
     parser.add_argument(
         "-s", "--sections",
