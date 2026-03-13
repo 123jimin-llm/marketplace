@@ -55,13 +55,13 @@ One file per tag in `tag/`, named `{tag_name}.md`. Brief description, no frontma
 
 ## ID Format
 
-4-digit increment with a letter prefix. Each class has its own counter.
+4-digit increment with a letter prefix. Each class has its own counter. The frontmatter `id` field is the prefix+number only (e.g. `"t0001"`); the kebab suffix is part of the filename/folder name.
 
-| Class | Format | Example |
+| Class | Format | Filename example |
 |---|---|---|
-| Task  | `t{NNNN}` | `t0001-bootstrap-worklog` |
-| Plan  | `p{NNNN}` | `p0001-plugin-system` |
-| Spec  | `s{NNNN}` | `s0001-auth` |
+| Task  | `t{NNNN}` | `t0001-bootstrap-worklog/` |
+| Plan  | `p{NNNN}` | `p0001-plugin-system/` |
+| Spec  | `s{NNNN}` | `s0001-auth.md` |
 
 IDs span active + archive — always scan both when assigning.
 
