@@ -1,6 +1,6 @@
 ---
 name: prompt-engineer
-description: Draft and revise LLM prompts, system prompts, AGENTS.md, and Agent Skills. Use when writing, reviewing, or debugging any AI instructions.
+description: This skill should be used when the user asks to "write a prompt", "shorten a prompt", "review my system prompt", "debug prompt output", "write a SKILL.md", "review my CLAUDE.md", or "write an AGENTS.md". Drafts, revises, and debugs LLM instructions and prompt artifacts.
 ---
 
 # Prompt Engineering
@@ -32,6 +32,10 @@ Ordered by impact. Priority: **Performance >= Meaning > Length**.
 6. Prompt leaks its own tone, format, and style into output. Write Prompt in the style you want End AI to produce.
 7. Every constraint competes for End AI's reasoning budget. Constraints affect behavior beyond their stated scope — evaluate by systemic impact.
 8. Ban the sneaky variant — End AI complies with the letter via modifiers, cause-chains, and synonyms. Pair every ban with a replacement behavior.
+
+## Scripts
+
+- `scripts/token-count.py` — Count tokens in a string or file. Supports Claude models, OpenAI models, and tiktoken encodings. Use `-f` for file input, `-s` for per-section breakdown, `-m` to select model (defaults to claude-opus-4-6).
 
 ## References
 
