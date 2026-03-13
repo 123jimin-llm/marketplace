@@ -16,7 +16,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/tools/scripts/token-count.py" -f path/to/fi
 
 ### Dependencies
 
-`anthropic` for Claude models (default), `tiktoken` for OpenAI models/encodings.
+`anthropic` for Claude models (default), `tiktoken` for OpenAI models/encodings. Assume installed; do not check or install.
 
 ### Flags
 
