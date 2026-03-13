@@ -4,9 +4,11 @@ Empirical observations from iterative prompt engineering work. For self-improvem
 
 ---
 
-**1. The user's true intent is rarely their first request.** A request for "vivid description" often means "immersive storytelling with character-driven pacing." The surface request describes a symptom; the underlying intent is structural. Expect the real goal to emerge over multiple feedback rounds.
+## General
 
-**2. Enforcement mechanisms are not interchangeable.** Same principle, dramatically different compliance depending on structural presentation. Ranked for behavioral constraints:
+**G1. The user's true intent is rarely their first request.** A request for "vivid description" often means "immersive storytelling with character-driven pacing." The surface request describes a symptom; the underlying intent is structural. Expect the real goal to emerge over multiple feedback rounds.
+
+**G2. Enforcement mechanisms are not interchangeable.** Same principle, dramatically different compliance depending on structural presentation. Ranked for behavioral constraints:
 
 - Numbered sequences / arrow chains: Strongest. Treated as executable procedures.
 - Concrete example pairs (NO/YES): Strong. Calibrates pattern-matching.
@@ -14,37 +16,47 @@ Empirical observations from iterative prompt engineering work. For self-improvem
 - Formatting emphasis (bold, headers, caps): Weak. Not reliably interpreted as behavioral priority.
 - Metaphorical framing: Near-zero for specific constraints. Useful only for high-level reasoning.
 
-**3. Over-specification suppresses creativity.** Detailed sub-categories and checklists get treated as inventories to fill. Condensed core principles produce freer generalization. Mechanism: finite reasoning budget — tokens parsing instructions are tokens not spent on creative problem-solving.
+**G3. "You may" and "You must" produce entirely different behavior.** Describing a tool as "important" or "available" does not ensure use. "Dialogue is a key means of characterization" → no dialogue. "Give characters dialogue" → dialogue. For expected behavior, use imperative verbs.
 
-**4. "You may" and "You must" produce entirely different behavior.** Describing a tool as "important" or "available" does not ensure use. "Dialogue is a key means of characterization" → no dialogue. "Give characters dialogue" → dialogue. For expected behavior, use imperative verbs.
+**G4. Persistent habits require explicit bans.** Some behaviors survive any amount of positive guidance. When a behavior persists through 2+ revision cycles, stop guiding implicitly and ban explicitly.
 
-**5. Anti-patterns should target the subtle violation.** Banning "don't state emotions before physical description" stops "she looked angry" but produces "with anger, her fist clenched." Model the sneaky version the AI would actually produce.
+**G5. Condensing a prompt can improve output quality.** Reducing sixteen lines to eight — preserving core principles — produced better output on the same scenarios. Instructions restating default behavior dilute attention to instructions that actually matter.
 
-**6. Principles have systemic effects beyond their stated scope.** A pacing principle also improved character personality, emotional depth, and immersion. Conversely, a principle preventing narrator editorializing also suppressed dialogue and internal monologue. Evaluate by systemic impact, not stated intent.
+**G6. One well-chosen example outperforms extensive explanation.** For qualitative goals, a single NO/YES pair consistently outperformed multi-sentence explanations. Pattern-matching is more reliable than interpretation for subtle distinctions.
 
-**7. Persistent habits require explicit bans.** Some behaviors survive any amount of positive guidance. When a behavior persists through 2+ revision cycles, stop guiding implicitly and ban explicitly.
+**G7. Test with diverse scenarios.** Three different scenarios revealed three different failure modes from the same prompt. Any single scenario hides the majority of issues.
 
-**8. Condensing a prompt can improve output quality.** Reducing sixteen lines to eight — preserving core principles — produced better output on the same scenarios. Instructions restating default behavior dilute attention to instructions that actually matter.
+**G8. Revision has diminishing returns.** First cycle captures the majority of improvement. By the fourth, changes are incremental.
 
-**9. One well-chosen example outperforms extensive explanation.** For qualitative goals, a single NO/YES pair consistently outperformed multi-sentence explanations. Pattern-matching is more reliable than interpretation for subtle distinctions.
+**G9. Reasoning models and instruction-following models need different prompting.** Heavy procedural constraints on a reasoning model degrade output — the model spends its reasoning budget on compliance. When model type is unknown, default to reasoning-model assumptions.
 
-**10. Test with diverse scenarios.** Three different scenarios revealed three different failure modes from the same prompt. Any single scenario hides the majority of issues.
+## Creative
 
-**11. Revision has diminishing returns.** First cycle captures the majority of improvement. By the fourth, changes are incremental.
+**C1. Over-specification suppresses creativity.** Detailed sub-categories and checklists get treated as inventories to fill. Condensed core principles produce freer generalization. Mechanism: finite reasoning budget — tokens parsing instructions are tokens not spent on creative problem-solving.
 
-**12. Reasoning models and instruction-following models need different prompting.** Heavy procedural constraints on a reasoning model degrade output — the model spends its reasoning budget on compliance. When model type is unknown, default to reasoning-model assumptions.
+**C2. Anti-patterns should target the subtle violation.** Banning "don't state emotions before physical description" stops "she looked angry" but produces "with anger, her fist clenched." Model the sneaky version the AI would actually produce.
 
-**13. Tool use defaults must be set explicitly.** Whether the AI defaults to acting or informing is not reliably inferred from context. When a prompt involves tools, state the default posture directly.
+**C3. Principles have systemic effects beyond their stated scope.** A pacing principle also improved character personality, emotional depth, and immersion. Conversely, a principle preventing narrator editorializing also suppressed dialogue and internal monologue. Evaluate by systemic impact, not stated intent.
+
+## Skills
+
+**S1. Tool use defaults must be set explicitly.** Whether the AI defaults to acting or informing is not reliably inferred from context. When a prompt involves tools, state the default posture directly.
+
+**S2. Skill descriptions must assert, not list.** Passive trigger lists ("Trigger on writing, shortening, reviewing, debugging") describe capability without compelling activation. "MUST trigger when editing X, Y, Z" fires reliably. Descriptions are classification prompts — assertive language changes the decision boundary.
+
+**S3. Redundant triggers in descriptions dilute signal.** Adding "shortening, debugging, rewriting" when "revise" and "debug" already cover them wastes description tokens and adds noise. Same principle as G5, applied to metadata. Every token in a description competes across all loaded skills.
+
+**S4. The skill editor will fail to load the skill for the skill's own task.** Editing SKILL.md is prompt artifact work — the prompt skill's exact domain — but the editor reached for reviewer agents instead. When the task matches a loaded skill, load it before delegating to other tools.
 
 ## Editing This Skill
 
-**14. The skill editor will violate the skill's own principles.** Writing "use hierarchy not bold for emphasis" then using bold for emphasis in the same document. Knowing a principle and applying it to your own output are separate capabilities. Cold-read the skill itself after every revision.
+**E1. The skill editor will violate the skill's own principles.** Writing "use hierarchy not bold for emphasis" then using bold for emphasis in the same document. Knowing a principle and applying it to your own output are separate capabilities. Cold-read the skill itself after every revision.
 
-**15. Abstract jargon is false compression.** Terms like "experiential output" or "prompt artifacts" compress efficiently for the author but are ambiguous without authorial context. This is distinct from #8 — the token count drops but misinterpretation rises. Test every compressed term: can it be parsed correctly by a reader who did not write it?
+**E2. Abstract jargon is false compression.** Terms like "experiential output" or "prompt artifacts" compress efficiently for the author but are ambiguous without authorial context. This is distinct from G5 — the token count drops but misinterpretation rises. Test every compressed term: can it be parsed correctly by a reader who did not write it?
 
-**16. Fixing ambiguity overcorrects into over-constraint.** Replacing a vague category with a concrete enumeration narrows scope past intent. The fix for ambiguity is the right level of specificity, not maximum specificity.
+**E3. Fixing ambiguity overcorrects into over-constraint.** Replacing a vague category with a concrete enumeration narrows scope past intent. The fix for ambiguity is the right level of specificity, not maximum specificity.
 
-**17. Token economy applies to markup, not just content.** `[foo](foo)` is identical to `<foo>`. Editors reviewing at the sentence level miss formatting-level waste. Audit markup as tokens.
+**E4. Token economy applies to markup, not just content.** `[foo](foo)` is identical to `<foo>`. Editors reviewing at the sentence level miss formatting-level waste. Audit markup as tokens.
 
 ## Open Questions
 
