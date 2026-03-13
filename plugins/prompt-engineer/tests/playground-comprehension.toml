@@ -1,0 +1,21 @@
+[generation]
+model = "claude-sonnet-4-6"
+temperature = 0
+max_tokens = 500
+
+[[prompts]]
+role = "system"
+file = "../skills/playground/SKILL.md"
+
+[[prompts]]
+role = "user"
+prompt = [
+    "The user says: \"Set up a playground for testing summarization prompts. I have two styles — bullet and narrative — and three article inputs.\" List every file/directory you create and a one-line content summary for each. No explanation.",
+    "A playground config.toml has substitute = true, parts = [\"prompts/main\", \"inputs\"]. Slot main has base and concise. User runs: scripts/playground-run.py pg/ -l test1 -v main=concise. For input case1.md, show the exact generated run.toml.",
+    "A playground has slots \"system\" (default=strict, files: strict.md, relaxed.md) and \"main\" (default=base, files: base.md, concise.md). User runs: scripts/playground-run.py pg/ -l sweep -v main=base,concise -v system=*. How many variation combos? List all output subdirectory names.",
+    "What is the difference between single-message mode and multi-message mode in composition? When would you use each? Can they coexist?",
+    "A playground has slot \"main\" with default \"base\". User runs: scripts/playground-run.py pg/ --dry-run (no -v flag). Which variation is used? Where is this configured?"
+]
+
+[output]
+file = "playground-comprehension.jsonl"

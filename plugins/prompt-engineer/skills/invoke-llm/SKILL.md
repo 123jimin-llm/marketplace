@@ -9,6 +9,8 @@ Script: `scripts/invoke-llm.py`
 
 Raw LLM API calls (text in, text out). No tool use, no agent context, no skills.
 
+Prefer TOML config mode over multiple script invocations — a single matrix run handles sweeps, produces structured output, and avoids repeated shell calls.
+
 ## Single-shot mode
 
 ```bash
