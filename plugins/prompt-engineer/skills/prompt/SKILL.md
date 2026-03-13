@@ -1,5 +1,5 @@
 ---
-name: engineer
+name: prompt
 description: Draft, revise, and debug LLM prompts and prompt artifacts (system prompts, SKILL.md, CLAUDE.md, AGENTS.md). Trigger on prompt writing, shortening, reviewing, debugging, or any task where the output is instructions for another AI.
 ---
 
