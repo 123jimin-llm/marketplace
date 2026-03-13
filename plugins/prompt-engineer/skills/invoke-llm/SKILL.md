@@ -1,6 +1,6 @@
 ---
 name: invoke-llm
-description: Run prompts against LLMs. Trigger on: test/send/invoke a prompt, get a completion, compare models, matrix sweep, batch-test prompts.
+description: "Run prompts against LLMs. Trigger on: test/send/invoke a prompt, get a completion, compare models, matrix sweep, batch-test prompts."
 ---
 
 # Invoke LLM

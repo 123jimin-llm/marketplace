@@ -1,5 +1,5 @@
 {
   "name": "prompt-engineer",
   "description": "Draft and revise LLM prompts, system prompts, AGENTS.md, and Agent Skills.",
-  "version": "0.2.0"
+  "version": "0.2.1"
 }

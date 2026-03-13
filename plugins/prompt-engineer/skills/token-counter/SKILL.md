@@ -1,6 +1,6 @@
 ---
 name: token-counter
-description: Count tokens in strings or files. Trigger on: how many tokens, measure prompt length, context window fit, token budget, per-section breakdown.
+description: "Count tokens in strings or files. Trigger on: how many tokens, measure prompt length, context window fit, token budget, per-section breakdown."
 ---
 
 # Token Counter
