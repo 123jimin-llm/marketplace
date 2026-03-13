@@ -1,5 +1,5 @@
 ---
-name: prompt-tools
+name: tools
 description: Use when the user asks to count tokens, measure prompt length, or check token usage for a string or file.
 ---
 
@@ -10,13 +10,13 @@ description: Use when the user asks to count tokens, measure prompt length, or c
 Run `scripts/token-count.py` from this skill's directory to count tokens. Report the result to the user.
 
 ```bash
-python "${CLAUDE_PLUGIN_ROOT}/skills/prompt-tools/scripts/token-count.py" "text"
-python "${CLAUDE_PLUGIN_ROOT}/skills/prompt-tools/scripts/token-count.py" -f path/to/file.md
+python "${CLAUDE_PLUGIN_ROOT}/skills/tools/scripts/token-count.py" "text"
+python "${CLAUDE_PLUGIN_ROOT}/skills/tools/scripts/token-count.py" -f path/to/file.md
 ```
 
 ### Dependencies
 
-Requires `anthropic` for Claude models (default) or `tiktoken` for OpenAI models/encodings. Install the relevant package before running.
+`anthropic` for Claude models (default), `tiktoken` for OpenAI models/encodings.
 
 ### Flags
 

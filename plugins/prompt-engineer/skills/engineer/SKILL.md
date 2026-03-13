@@ -1,5 +1,5 @@
 ---
-name: prompt-engineer
+name: engineer
 description: This skill should be used when the user asks to "write a prompt", "shorten a prompt", "review my system prompt", "debug prompt output", "write a SKILL.md", "review my CLAUDE.md", or "write an AGENTS.md". Drafts, revises, and debugs LLM instructions and prompt artifacts.
 ---
 
