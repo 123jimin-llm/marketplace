@@ -18,7 +18,7 @@ from frontmatter import parse_item
 REF_FIELDS = ("blocked_by", "implements", "modifies", "targets", "updated_by")
 
 # Entry files within item subfolders
-ENTRY_FILE = {"task": "goal.md", "plan": "overview.md"}
+ENTRY_FILE = {"task": "index.md", "plan": "index.md"}
 
 
 def collect_items(worklog_root: Path, include_archive: bool) -> list[dict]:

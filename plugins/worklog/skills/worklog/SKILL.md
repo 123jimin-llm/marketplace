@@ -25,65 +25,29 @@ worklog/
 
 ## Item Types
 
-### Specs — what is true now
+| Type | Dir | Naming | Entry file | Statuses | Archive? |
+|------|-----|--------|------------|----------|----------|
+| Spec | `spec/` (flat) | `s{NNNN}-kebab.md` | — (file itself) | — | Never (delete or keep) |
+| Plan | `plan/` (subfolder) | `p{NNNN}-kebab/` | `index.md` | draft, approved, active, abandoned | `archive/plan/` |
+| Task | `task/` (subfolder) | `t{NNNN}-kebab/` | `index.md` | pending, active, blocked, done | `archive/task/` |
 
-Flat files in `spec/` named `s{NNNN}-kebab-name.md`. A spec describes current-state behavior. Code diverging from a spec is a bug.
+Plans may include additional files. Tasks may include `steps.md` (checklist) and `notes.md` (scratchpad).
 
-**Immutable on their own** — only a task may modify a spec. `updated_by` forms an append-only audit trail.
+### Frontmatter fields
 
-```toml
-+++
-id = "s0001"
-title = "Topic name"
-created = 2025-01-15
-updated = 2025-01-15
-tags = []
-updated_by = []         # task IDs, append-only
-+++
-```
+All items use `+++`-delimited TOML. Common fields: `id`, `title`, `created`, `tags = []`.
 
-Specs are never archived — they exist or they are deleted.
+| Field | Spec | Plan | Task | Notes |
+|-------|:----:|:----:|:----:|-------|
+| `updated` | x | | | |
+| `status` | | x | x | see statuses above |
+| `blocked_by` | | x | x | task or plan IDs |
+| `targets` | | x | | spec IDs to create/modify |
+| `implements` | | | x | plan IDs |
+| `modifies` | | | x | spec IDs |
+| `updated_by` | x | | | task IDs, append-only audit trail |
 
-### Plans — what should change
-
-Subfolders in `plan/` named `p{NNNN}-kebab-name`. A plan proposes a change: problem statement, solution design, and which specs it would create or modify.
-
-Mandatory file: `overview.md` (carries frontmatter). Additional files as needed.
-
-```toml
-+++
-id = "p0001"
-title = "Short descriptive title"
-status = "draft"          # draft | approved | active | abandoned
-created = 2025-01-15
-tags = []
-blocked_by = []           # task or plan IDs
-targets = []              # spec IDs this plan would create or modify
-+++
-```
-
-Archived to `archive/plan/` when fully applied or abandoned.
-
-### Tasks — what to do
-
-Subfolders in `task/` named `t{NNNN}-kebab-name`. A task is a concrete unit of work that implements plans and modifies specs.
-
-Mandatory file: `goal.md` (carries frontmatter). Optional: `steps.md` (checklist), `notes.md` (scratchpad).
-
-```toml
-+++
-id = "t0001"
-title = "Short imperative title"
-status = "pending"        # pending | active | blocked | done
-created = 2025-01-15
-tags = []
-blocked_by = []           # task or plan IDs
-implements = []           # plan IDs
-modifies = []             # spec IDs
-+++
-```
-
-On completion (`status = "done"`), archive the entire folder.
+Specs are **immutable on their own** — only a task may modify a spec.
 
 ### Tags
 
@@ -123,82 +87,30 @@ spec ──updated_by─────▶ task  (append-only)
 
 Not every task needs a plan — small or reactive work can start directly as a task.
 
-## Frontmatter Format
-
-All worklog items use **TOML frontmatter** delimited by `+++`. No YAML support.
-
 ## Scripts
 
-### `init-worklog.py` — Scaffold worklog directory tree
+All scripts accept `-w PATH` to set the worklog root (default: `./worklog`).
 
 ```bash
+# init-worklog.py — scaffold directory tree with AGENTS.md + .gitkeep
 init-worklog.py [path]          # default: ./worklog
 init-worklog.py --force         # overwrite existing AGENTS.md files
-```
 
-| Flag | Description |
-|------|-------------|
-| `path` (positional) | Root path for the worklog (default: `./worklog`) |
-| `--force` | Overwrite existing AGENTS.md files |
-
-Creates the full directory tree with AGENTS.md files and .gitkeep files. Idempotent — skips existing files unless `--force`.
-
-### `next-id.py` — Get next available ID
-
-```bash
+# next-id.py — print next available ID
 next-id.py task                 # -> t0001
-next-id.py plan -w ./worklog   # -> p0003
-next-id.py spec                # -> s0001
-```
+next-id.py plan                 # -> p0003
 
-| Flag | Description |
-|------|-------------|
-| `item_class` (positional) | `task`, `plan`, or `spec` |
-| `-w PATH` | Worklog root directory (default: `./worklog`) |
-
-### `list.py` — List items by type/status/tag
-
-```bash
+# list.py — list items by type/status/tag
 list.py task                    # all tasks
-list.py task -s active          # active tasks only
-list.py spec -t auth            # specs tagged "auth"
+list.py task -s active          # filter by status
+list.py spec -t auth            # filter by tag
 list.py plan --json             # JSON output
-```
 
-| Flag | Description |
-|------|-------------|
-| `item_class` (positional) | `task`, `plan`, or `spec` |
-| `-s STATUS` | Filter by status |
-| `-t TAG` | Filter by tag |
-| `-w PATH` | Worklog root directory (default: `./worklog`) |
-| `--json` | Output as JSON instead of table |
-
-### `find-refs.py` — Reverse-lookup cross-references
-
-```bash
-find-refs.py t0001                  # who references t0001?
+# find-refs.py — reverse-lookup cross-references (frontmatter + body)
+find-refs.py t0001              # who references t0001?
 find-refs.py s0002 --include-archive
+
+# archive.py — move completed items to archive/
+archive.py t0001                # task must be "done"
+archive.py p0003 --force        # skip status check (plans: "abandoned" or "active")
 ```
-
-| Flag | Description |
-|------|-------------|
-| `target_id` (positional) | The ID to search for |
-| `-w PATH` | Worklog root directory (default: `./worklog`) |
-| `--include-archive` | Also search archived items |
-
-Searches both frontmatter reference fields and body text.
-
-### `archive.py` — Archive completed items
-
-```bash
-archive.py t0001                # archive task t0001
-archive.py p0003 --force        # skip status check
-```
-
-| Flag | Description |
-|------|-------------|
-| `item_id` (positional) | Item ID to archive (t#### or p####) |
-| `-w PATH` | Worklog root directory (default: `./worklog`) |
-| `--force` | Skip status validation |
-
-Tasks must have `status = "done"`. Plans must have `status = "abandoned"` or `"active"` (fully applied). Use `--force` to override.

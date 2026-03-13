@@ -6,10 +6,10 @@ Archived to `archive/plan/` when fully applied or abandoned.
 
 ### Subfolder contents
 
-- `overview.md` — **mandatory**. Problem statement, proposed solution, and carries the frontmatter.
+- `index.md` — **mandatory**. Problem statement, proposed solution, and carries the frontmatter.
 - Additional topic-specific files as needed (`api.md`, `open.md`, etc.).
 
-### Frontmatter (`overview.md`)
+### Frontmatter (`index.md`)
 
 ```toml
 +++

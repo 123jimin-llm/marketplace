@@ -18,7 +18,7 @@ from frontmatter import parse_item
 ID_RE = re.compile(r"^([tp])(\d{4})$")
 
 CLASS_MAP = {"t": "task", "p": "plan"}
-ENTRY_FILE = {"t": "goal.md", "p": "overview.md"}
+ENTRY_FILE = {"t": "index.md", "p": "index.md"}
 DONE_STATUS = {"t": "done", "p": ("abandoned", "active")}  # plans archive when fully applied or abandoned
 
 

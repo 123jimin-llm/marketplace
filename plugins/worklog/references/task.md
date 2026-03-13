@@ -6,13 +6,13 @@ On completion (`status = "done"`), move the entire folder to `archive/task/` pro
 
 ### Subfolder contents
 
-- `goal.md` — **mandatory**. Defines what this task achieves and carries the frontmatter.
+- `index.md` — **mandatory**. Defines what this task achieves and carries the frontmatter.
 - `steps.md` — breakdown / checklist.
 - `notes.md` — scratchpad, decisions, blockers.
 
 Optional files are created only when needed.
 
-### Frontmatter (`goal.md`)
+### Frontmatter (`index.md`)
 
 ```toml
 +++

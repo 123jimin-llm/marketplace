@@ -19,7 +19,7 @@ from frontmatter import parse_item
 CLASS_MAP = {"task": "task", "plan": "plan", "spec": "spec"}
 
 # Frontmatter file within each item type
-ENTRY_FILE = {"task": "goal.md", "plan": "overview.md"}
+ENTRY_FILE = {"task": "index.md", "plan": "index.md"}
 
 
 def find_items(worklog_root: Path, item_class: str) -> list[dict]:
