@@ -25,7 +25,54 @@ def collect_parts(strings, files):
     return "\n\n".join(parts) if parts else None
 
 
-def run_matrix(config_path, dry_run, json_output):
+def _toml_str(s: str) -> str:
+    """Serialize a string as a TOML value (multiline if contains newlines)."""
+    if "\n" in s:
+        escaped = s.replace("\\", "\\\\").replace('"""', '""\\"')
+        return f'"""\n{escaped}"""'
+    escaped = s.replace("\\", "\\\\").replace('"', '\\"').replace("\t", "\\t").replace("\r", "\\r")
+    return f'"{escaped}"'
+
+
+def _result_to_toml(result: dict) -> str:
+    """Serialize a single LLM result dict to a TOML document string."""
+    lines = [
+        f"response = {_toml_str(result['response'])}",
+        f"model = {_toml_str(result['model'])}",
+        f"input_tokens = {result['input_tokens']}",
+        f"output_tokens = {result['output_tokens']}",
+        f"latency_ms = {result['latency_ms']}",
+        f"stop_reason = {_toml_str(result['stop_reason'])}",
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def _results_to_toml(results: list) -> str:
+    """Serialize matrix results to a TOML document with [[results]] array of tables."""
+    parts = []
+    for r in results:
+        labels = r["labels"]
+        label_items = ", ".join(f'{k} = {_toml_str(str(v))}' for k, v in labels.items())
+        lines = [
+            "[[results]]",
+            f"labels = {{{label_items}}}",
+        ]
+        if "error" in r:
+            lines.append(f"error = {_toml_str(r['error'])}")
+        else:
+            lines += [
+                f"response = {_toml_str(r['response'])}",
+                f"model = {_toml_str(r['model'])}",
+                f"input_tokens = {r['input_tokens']}",
+                f"output_tokens = {r['output_tokens']}",
+                f"latency_ms = {r['latency_ms']}",
+                f"stop_reason = {_toml_str(r['stop_reason'])}",
+            ]
+        parts.append("\n".join(lines))
+    return "\n\n".join(parts) + "\n"
+
+
+def run_matrix(config_path, dry_run, json_output, toml_output):
     """Run a TOML-configured matrix of LLM invocations."""
     from matrix import load_config, expand_matrix, matrix_dimensions
     from display import render_table
@@ -67,17 +114,22 @@ def run_matrix(config_path, dry_run, json_output):
 
         results.append(record)
 
-    # Write JSONL output file if configured
+    # Write output file if configured
     if output_file:
         base_dir = config["_base_dir"]
         out_path = base_dir / output_file
         with open(out_path, "w", encoding="utf-8") as f:
-            for r in results:
-                f.write(json.dumps(r) + "\n")
+            if toml_output:
+                f.write(_results_to_toml(results))
+            else:
+                for r in results:
+                    f.write(json.dumps(r) + "\n")
         print(f"\nResults written to {out_path}", file=sys.stderr)
 
-    # JSON/JSONL to stdout
-    if json_output:
+    # Structured output to stdout
+    if toml_output:
+        print(_results_to_toml(results), end="")
+    elif json_output:
         for r in results:
             print(json.dumps(r))
     else:
@@ -159,11 +211,18 @@ def main():
         "-o", "--output",
         help="Write output to file",
     )
-    parser.add_argument(
+    fmt_group = parser.add_mutually_exclusive_group()
+    fmt_group.add_argument(
         "--json",
         action="store_true",
         dest="json_output",
-        help="Output JSON with metadata",
+        help="Output JSON with metadata (response, model, tokens, latency, stop_reason)",
+    )
+    fmt_group.add_argument(
+        "--toml",
+        action="store_true",
+        dest="toml_output",
+        help="Output TOML with metadata (response, model, tokens, latency, stop_reason)",
     )
     parser.add_argument(
         "-c", "--config",
@@ -196,7 +255,7 @@ def main():
         if args.output:
             print("Warning: -o ignored in config mode (use [output].file in TOML)", file=sys.stderr)
 
-        run_matrix(args.config, args.dry_run, args.json_output)
+        run_matrix(args.config, args.dry_run, args.json_output, args.toml_output)
         return
 
     # --- Single-shot mode (unchanged) ---
@@ -227,7 +286,9 @@ def main():
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
-    if args.json_output:
+    if args.toml_output:
+        output = _result_to_toml(result)
+    elif args.json_output:
         output = json.dumps(result, indent=2)
     else:
         output = result["response"]

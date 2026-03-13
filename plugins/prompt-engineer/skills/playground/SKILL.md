@@ -61,10 +61,14 @@ Paths resolve relative to playground root. Directory paths (e.g., `"prompts/main
 
 ### Frontmatter
 
-All `.md` files support optional YAML frontmatter. Frontmatter is stripped before LLM calls.
+`prompts/*/*.md` and `inputs/*.md` support optional YAML frontmatter (`---`). Frontmatter is stripped before LLM calls.
 
 - `prompts/*/*.md`, `inputs/*.md`: `comments:` (free-form note).
-- `outputs/*/*.md`: `score:` (1–5, scale/criteria from `task.md`), `comments:`.
+
+`outputs/*/*.md` use TOML frontmatter (`+++`) written by `playground-run.py`:
+
+- Metadata written by `--json`: `model`, `input_tokens`, `output_tokens`, `latency_ms`, `stop_reason`.
+- Evaluation fields added manually: `score` (1–5, scale/criteria from `task.md`), `comments`.
 
 ## Run
 

@@ -140,15 +140,15 @@ def main():
             out_file = out_dir / f"{case_name}.md"
             fm_lines = []
             if args.json_output:
-                fm_lines.append(f"model: {result['model']}")
-                fm_lines.append(f"input_tokens: {result['input_tokens']}")
-                fm_lines.append(f"output_tokens: {result['output_tokens']}")
-                fm_lines.append(f"latency_ms: {result['latency_ms']}")
-                fm_lines.append(f"stop_reason: {result['stop_reason']}")
+                fm_lines.append(f'model = "{result["model"]}"')
+                fm_lines.append(f'input_tokens = {result["input_tokens"]}')
+                fm_lines.append(f'output_tokens = {result["output_tokens"]}')
+                fm_lines.append(f'latency_ms = {result["latency_ms"]}')
+                fm_lines.append(f'stop_reason = "{result["stop_reason"]}"')
 
             content = ""
             if fm_lines:
-                content = "---\n" + "\n".join(fm_lines) + "\n---\n"
+                content = "+++\n" + "\n".join(fm_lines) + "\n+++\n"
             content += result["response"] + "\n"
             out_file.write_text(content, encoding="utf-8")
 

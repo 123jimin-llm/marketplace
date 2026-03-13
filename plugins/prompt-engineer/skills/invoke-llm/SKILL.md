@@ -19,6 +19,7 @@ invoke-llm.py "Write a haiku" -s "You are a poet"
 invoke-llm.py -U prompt.md -S system.md -o output.md
 invoke-llm.py -S role.md -S rules.md -U context.md -U question.md
 invoke-llm.py -U prompt.md -m gpt-5-mini -t 0.0 --json
+invoke-llm.py -U prompt.md -m gpt-5-mini -t 0.0 --toml
 ```
 
 | Flag | Description |
@@ -33,8 +34,9 @@ invoke-llm.py -U prompt.md -m gpt-5-mini -t 0.0 --json
 | `--max-tokens N` | Max output tokens. Default: `4096` |
 | `-o FILE` | Write output to file (still prints to stdout) |
 | `--json` | JSON output with metadata (response, model, tokens, latency, stop_reason) |
+| `--toml` | TOML output with metadata (response, model, tokens, latency, stop_reason) |
 
-Repeatable flags join with `"\n\n"`. When combining `-u`/`-U` (or `-s`/`-S`), strings come before file contents.
+`--json` and `--toml` are mutually exclusive. Repeatable flags join with `"\n\n"`. When combining `-u`/`-U` (or `-s`/`-S`), strings come before file contents.
 
 ## TOML config mode
 
@@ -42,6 +44,7 @@ Repeatable flags join with `"\n\n"`. When combining `-u`/`-U` (or `-s`/`-S`), st
 invoke-llm.py -c run.toml                   # run from config
 invoke-llm.py -c run.toml --dry-run         # print matrix shape, don't execute
 invoke-llm.py -c run.toml --json            # JSONL output to stdout
+invoke-llm.py -c run.toml --toml            # TOML output to stdout
 ```
 
 `-c` is mutually exclusive with single-shot flags. `--dry-run` requires `-c`.
