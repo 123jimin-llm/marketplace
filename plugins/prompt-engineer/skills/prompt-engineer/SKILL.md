@@ -33,10 +33,6 @@ Ordered by impact. Priority: **Performance >= Meaning > Length**.
 7. Every constraint competes for End AI's reasoning budget. Constraints affect behavior beyond their stated scope — evaluate by systemic impact.
 8. Ban the sneaky variant — End AI complies with the letter via modifiers, cause-chains, and synonyms. Pair every ban with a replacement behavior.
 
-## Scripts
-
-- `scripts/token-count.py` — Count tokens in a string or file. Supports Claude models, OpenAI models, and tiktoken encodings. Use `-f` for file input, `-s` for per-section breakdown, `-m` to select model (defaults to claude-opus-4-6).
-
 ## References
 
 - <references/creative.md> — Fiction, roleplay, persona, aesthetic output.
