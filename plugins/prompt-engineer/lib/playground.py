@@ -100,7 +100,7 @@ def _resolve_part(part: str, pg_config: dict, variation_combo: dict[str, str],
 
     if part == "inputs":
         text = input_file.read_text(encoding="utf-8")
-        _, _, body = split_frontmatter(text)
+        body = split_frontmatter(text).body
         rel_path = input_file.relative_to(pg_dir)
         return body, rel_path
 
@@ -117,7 +117,7 @@ def _resolve_part(part: str, pg_config: dict, variation_combo: dict[str, str],
                 raise FileNotFoundError(
                     f"Slot '{slot_name}' variation '{variation}' not found: {resolved}"
                 )
-            _, _, body = split_frontmatter(text)
+            body = split_frontmatter(text).body
             rel_path = resolved.relative_to(pg_dir)
             return body, rel_path
 
@@ -127,7 +127,7 @@ def _resolve_part(part: str, pg_config: dict, variation_combo: dict[str, str],
         text = resolved.read_text(encoding="utf-8")
     except FileNotFoundError:
         raise FileNotFoundError(f"Prompt file not found: {resolved}")
-    _, _, body = split_frontmatter(text)
+    body = split_frontmatter(text).body
     rel_path = Path(part)
     return body, rel_path
 

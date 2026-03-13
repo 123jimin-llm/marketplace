@@ -2,23 +2,48 @@
 
 import re
 import time
+import tomllib
+from typing import NamedTuple
 
 
-def split_frontmatter(text: str) -> tuple[str, str, str]:
+class ParsedDoc(NamedTuple):
+    frontmatter: dict
+    body: str
+
+
+def _parse_yaml_flat(text: str) -> dict:
+    """Parse flat YAML (key: value pairs only, as used in frontmatter)."""
+    result = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        key, sep, value = line.partition(":")
+        if not sep:
+            continue
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+            value = value[1:-1]
+        result[key.strip()] = value
+    return result
+
+
+def split_frontmatter(text: str) -> ParsedDoc:
     """Split frontmatter from body. Supports TOML (+++) and YAML (---) delimiters.
 
-    Returns (description, frontmatter, body).
+    Returns ParsedDoc(frontmatter, body) where frontmatter is a parsed dict.
+    Raises ValueError if an unclosed frontmatter block is detected.
     """
-    for delim in ("+++", "---"):
-        m = re.match(rf"^{re.escape(delim)}\n(.*?\n){re.escape(delim)}\n?", text, re.DOTALL)
-        if m:
-            fm = m.group(1)
-            desc = ""
-            dm = re.search(r"^description\s*[=:]\s*(.+)$", fm, re.MULTILINE)
-            if dm:
-                desc = dm.group(1).strip().strip('"\'')
-            return desc, fm, text[m.end():]
-    return "", "", text
+    for delim, pattern, parser in (
+        ("+++", r"^\+\+\+\n(.*?\n)\+\+\+\n?", tomllib.loads),
+        ("---", r"^---\n(.*?\n)---\n?", _parse_yaml_flat),
+    ):
+        if text.startswith(delim + "\n"):
+            m = re.match(pattern, text, re.DOTALL)
+            if not m:
+                raise ValueError(f"Unclosed frontmatter block (expected closing '{delim}')")
+            return ParsedDoc(parser(m.group(1)), text[m.end():])
+    return ParsedDoc({}, text)
 
 
 def split_sections(text: str) -> list[tuple[str, str]]:

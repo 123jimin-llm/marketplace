@@ -65,11 +65,12 @@ def _print_single(item: tuple[str, str], model: str, sections: bool):
     total = count_tokens(text, model)
 
     if sections:
-        description, _, body = split_frontmatter(text)
+        result = split_frontmatter(text)
         parts = []
-        if description:
-            parts.append(("(description)", description))
-        parts.extend(split_sections(body))
+        desc = result.frontmatter.get("description", "")
+        if desc:
+            parts.append(("(description)", desc))
+        parts.extend(split_sections(result.body))
 
         max_name = max(len(name) for name, _ in parts) if parts else 0
         for name, content in parts:
@@ -84,11 +85,12 @@ def _print_table(items: list[tuple[str, str]], models: list[str], sections: bool
     """Multi-input and/or multi-model table display."""
     if sections and len(items) == 1:
         _, text = items[0]
-        description, _, body = split_frontmatter(text)
+        result = split_frontmatter(text)
         parts = []
-        if description:
-            parts.append(("(description)", description))
-        parts.extend(split_sections(body))
+        desc = result.frontmatter.get("description", "")
+        if desc:
+            parts.append(("(description)", desc))
+        parts.extend(split_sections(result.body))
 
         rows = [_count_row(name, content, models) for name, content in parts]
         rows.append(_count_row("TOTAL", text, models))
