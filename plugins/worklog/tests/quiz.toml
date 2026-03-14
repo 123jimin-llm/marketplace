@@ -1,0 +1,114 @@
+# Used with prompt-engineer:invoke-llm skill.
+# Grouped quiz — 4 prompts instead of 24 individual questions.
+[generation]
+model = "gpt-5.4"
+temperature = 0.0
+
+[[prompts]]
+role = "system"
+prompt = "You are a software engineer using a project management system. Answer based solely on the reference document. Be concise."
+
+[[prompts]]
+role = "user"
+file = "../skills/worklog/SKILL.md"
+separator = "\n---\n"
+
+# === Answer key ===
+# Group 1 — Basics
+#   1. t0015, task/t0015-fix-login-timeout.md. Kebab suffix in filename only.
+#   2. +++‑delimited TOML. Minimal spec: id, title, created, tags.
+#   3. Must include id, title, status, created, tags, blocked_by=["p0005"], implements=["p0003"], modifies=["s0001","s0002"].
+#   4. find-refs.py s0004. Reverse-lookup; add --include-archive for archived items.
+#   5. IDs are globally unique across active + archive. Skipping archive risks ID reuse.
+#   6. Directory when supporting files needed. Promote flat → dir (index.md). Task dirs: steps.md, notes.md.
+#
+# Group 2 — Plan lifecycle
+#   1. No — plan must be approved first (draft → approved) before tasks can implement it.
+#   2. Append t0030 to s0010's updated_by (append-only). Set updated date on s0010.
+#   3. No — plans target specs; only tasks may modify specs. Specs immutable except via task.
+#   4. s0010.updated_by must include t0030. Also check updated date is set.
+#   5. Tasks first (any order among themselves), then plan last. Plan can't archive until all tasks done/archived.
+#   6. validate.py reports "plans ready to archive" when all implementing tasks are complete.
+#
+# Group 3 — Validation & recovery
+#   1. t0005 auto-removed from blocked_by of t0008 and p0004 (completed item auto-clean).
+#   2. NOT auto-cleaned. Abandoned archive only warns; stale blocked_by refs remain. validate.py flags them.
+#   3. t9999 doesn't exist in worklog. Fix: correct the ID or remove from blocked_by. Re-run validate.
+#   4. Create a task to archive or remove the spec. Only a task may modify/archive a spec. Archive to archive/spec/.
+#   5. p0003: add s0005 to targets. t0010: add modifies=["s0005"]. New s0005: full frontmatter with updated_by=["t0010"].
+#   6. Can't skip tasks once plan exists — must go through full lifecycle. "Skip plan" means don't create one at all.
+#
+# Group 4 — Spec integrity traps
+#   1. Code diverging from spec is a bug — even if code works. Create task to reconcile. Write spec from plan, not code.
+#   2. Trap: inline spec content must be extracted to spec/ files before archiving. Check targets satisfied, specs exist with plan-derived content, updated_by wired.
+#   3. Write from plan p0004, NOT from src/auth.py. Spec content derives from plan intent. Code may have bugs or drift.
+#   4. Trap: must verify s0005 and s0006 actually exist with plan-derived content and updated_by includes task IDs. validate.py only checks ref existence, not content correctness.
+#   5. Trap: t0020 is missing modifies=["s0008"]. Spec s0008 was never created. Code alone doesn't fulfill plan targets — spec must exist with content from plan.
+
+[[prompts]]
+role = "user"
+prompt = [
+  """\
+Answer each question independently.
+
+1. You need to create a new task. The highest existing task ID (across active and archive) is t0014. What ID and file name would you use for a task titled "Fix login timeout"?
+
+2. What frontmatter format do worklog items use? Write a minimal valid frontmatter block for a new spec.
+
+3. A task t0008 is blocked by plan p0005 and implements plan p0003. It modifies specs s0001 and s0002. Write its complete frontmatter.
+
+4. You want to find every item that references spec s0004. What script do you run and what does it search?
+
+5. When assigning a new plan ID, why must you scan the archive directory too?
+
+6. Plans and tasks can be flat files or directories. When is a directory used, and what additional files can a task directory include?\
+""",
+  """\
+You are working in a single worklog. Answer each question in order.
+
+Repo state: Plan p0005-caching.md exists as draft. It targets specs s0010 and s0011.
+
+1. Can you immediately create tasks that implement p0005? What must happen first?
+
+2. p0005 is now approved. You create t0030 (implements p0005, modifies s0010) and t0031 (implements p0005, modifies s0011). Task t0030 modifies spec s0010. What change must be made to s0010's frontmatter?
+
+3. Can p0005 directly modify s0010 instead of going through a task?
+
+4. t0030 is done. You want to archive it. What must you verify about s0010 first?
+
+5. Both tasks done. What's the archive order and why?
+
+6. All tasks implementing p0005 are complete. How would you discover this without manually checking each task?\
+""",
+  """\
+Each question below is an independent scenario in a separate worklog.
+
+1. You archived task t0005 (status="done") and it was in the blocked_by of t0008 and p0004. What happens?
+
+2. You archived plan p0001 (status="abandoned"). Tasks t0005 and t0008 both have blocked_by = ["p0001"]. What is the state of t0005 and t0008 now?
+
+3. validate.py reports "dangling reference t9999 in blocked_by of t0003". What does this mean and how do you fix it?
+
+4. A spec is no longer relevant to the project. How do you clean it up?
+
+5. Plan p0003 has targets = ["s0002"]. During implementation, task t0010 also needs to create a brand new spec s0005. List every frontmatter change needed across all affected items.
+
+6. Plan p0006 is trivial — adding one config field. You want to skip creating tasks and just make the change directly. Walk through how you'd handle p0006's lifecycle.\
+""",
+  """\
+Each scenario below is in a separate worklog. Walk through what you would do. Be thorough.
+
+1. After deploying, you notice the code handles timeouts differently from what spec s0003 describes. The code works correctly in production and passes all tests. What do you do?
+
+2. Plan p0004 contains a detailed inline specification of the caching layer — invalidation rules, TTL defaults, eviction policy. All implementing tasks are done. You're about to archive p0004. Walk through what you'd check before archiving.
+
+3. Task t0015 modifies spec s0003. You need to write the updated content for s0003. Plan p0004 describes the intended design. The code in src/auth.py is already complete and tested. How do you write s0003?
+
+4. Plan p0003 (status="active", targets = ["s0005", "s0006"]) has two implementing tasks: t0010 (done, modifies = ["s0005"]) and t0011 (done, modifies = ["s0006"]). validate.py reports no errors. You're ready to archive. Walk through the steps.
+
+5. Plan p0007 (status="active", targets = ["s0008"]) has one task: t0020 (implements = ["p0007"]). t0020 has written the code in src/payments.py, all tests pass, and t0020 is marked done. You want to archive everything. What do you do?\
+""",
+]
+
+[output]
+file = "quiz-results.toml"
