@@ -12,35 +12,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from frontmatter import parse_item, iter_items, _CLASS_PREFIX
+from frontmatter import collect_all_items
 
 # Frontmatter fields that contain cross-references
 REF_FIELDS = ("blocked_by", "implements", "modifies", "targets", "updated_by")
-
-
-def collect_items(worklog_root: Path, include_archive: bool) -> list[dict]:
-    """Collect all parseable worklog items."""
-    items = []
-
-    scan_dirs = [
-        ("task", worklog_root / "task"),
-        ("plan", worklog_root / "plan"),
-        ("spec", worklog_root / "spec"),
-    ]
-    if include_archive:
-        scan_dirs.extend([
-            ("task", worklog_root / "archive" / "task"),
-            ("plan", worklog_root / "archive" / "plan"),
-        ])
-
-    for item_class, class_dir in scan_dirs:
-        prefix = _CLASS_PREFIX[item_class]
-        for f in iter_items(class_dir, prefix):
-            try:
-                items.append(parse_item(f))
-            except Exception:
-                pass
-    return items
 
 
 def find_references(items: list[dict], target_id: str) -> list[dict]:
@@ -94,7 +69,7 @@ def main() -> None:
         print(f"Error: worklog directory not found: {root}", file=sys.stderr)
         sys.exit(1)
 
-    items = collect_items(root, args.include_archive)
+    items = collect_all_items(root, include_archive=args.include_archive)
     refs = find_references(items, args.target_id)
 
     if not refs:

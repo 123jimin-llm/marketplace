@@ -79,6 +79,16 @@ spec ──updated_by─────▶ task  (append-only)
 
 Small or reactive work can skip the plan — start directly as a task.
 
+## Validation
+
+Run `validate.py` after any batch of changes. It checks:
+- Dangling cross-references (target ID does not exist)
+- Stale `blocked_by` entries (blocking item already done/archived)
+- Plans ready to archive (all implementing tasks complete)
+- Invalid statuses and missing required fields
+
+Archiving a completed item automatically removes it from `blocked_by` fields of active items. Archiving an abandoned item warns but does not auto-clean.
+
 ## Scripts
 
 All accept `-w PATH` for worklog root (default: `./worklog`). Run `--help` for full usage.
@@ -89,4 +99,5 @@ next-id.py task                         # next available ID (e.g. t0015)
 list.py task -s active                  # list items; -s status, -t tag, --json
 find-refs.py t0001 [--include-archive]  # reverse-lookup references to an ID
 archive.py t0001 [--force]              # move completed item to archive/
+validate.py [--strict]                  # check refs, statuses, archivable items
 ```

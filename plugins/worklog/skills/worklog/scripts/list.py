@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from frontmatter import parse_item, iter_items, _CLASS_PREFIX
+from frontmatter import parse_item, iter_items, CLASS_PREFIX
 
 CLASS_MAP = {"task": "task", "plan": "plan", "spec": "spec"}
 
@@ -22,7 +22,7 @@ CLASS_MAP = {"task": "task", "plan": "plan", "spec": "spec"}
 def find_items(worklog_root: Path, item_class: str) -> list[dict]:
     """Find and parse all items of the given class."""
     class_dir = worklog_root / CLASS_MAP[item_class]
-    prefix = _CLASS_PREFIX[item_class]
+    prefix = CLASS_PREFIX[item_class]
     items = []
     for f in iter_items(class_dir, prefix):
         try:

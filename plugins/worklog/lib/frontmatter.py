@@ -1,7 +1,8 @@
-"""Shared TOML frontmatter parsing and ID scanning for worklog scripts."""
+"""Shared TOML frontmatter parsing, ID scanning, and field updates for worklog scripts."""
 
 import re
 import tomllib
+from datetime import date
 from pathlib import Path
 from typing import NamedTuple
 
@@ -38,7 +39,7 @@ def parse_item(path: Path | str) -> dict:
 _ID_RE = re.compile(r"^([tps])(\d{4})")
 
 # Prefix patterns per item class
-_CLASS_PREFIX = {"task": "t", "plan": "p", "spec": "s"}
+CLASS_PREFIX = {"task": "t", "plan": "p", "spec": "s"}
 
 
 def iter_items(class_dir: Path, prefix: str) -> list[Path]:
@@ -81,8 +82,8 @@ def promote_to_dir(flat_file: Path) -> Path:
 def scan_ids(worklog_root: Path | str, prefix: str) -> list[int]:
     """Scan active + archive dirs for items matching prefix (t/p/s).
 
-    For tasks and plans (t/p), scans subfolder names.
-    For specs (s), scans filenames directly.
+    Matches both flat files ({prefix}NNNN-kebab.md) and directories
+    ({prefix}NNNN-kebab/) by their entry name.
     Returns sorted list of numeric IDs found.
     """
     worklog_root = Path(worklog_root)
@@ -109,3 +110,96 @@ def scan_ids(worklog_root: Path | str, prefix: str) -> list[int]:
                 ids.add(int(m.group(2)))
 
     return sorted(ids)
+
+
+def collect_all_items(
+    worklog_root: Path,
+    include_archive: bool = False,
+    classes: tuple[str, ...] = ("task", "plan", "spec"),
+) -> list[dict]:
+    """Parse all items across specified classes.
+
+    Returns list of frontmatter dicts (from parse_item).
+    Silently skips items that fail to parse.
+    """
+    items: list[dict] = []
+    scan_dirs: list[tuple[str, Path]] = []
+    for cls in classes:
+        prefix = CLASS_PREFIX[cls]
+        scan_dirs.append((prefix, worklog_root / cls))
+        if include_archive and cls in ("task", "plan"):
+            scan_dirs.append((prefix, worklog_root / "archive" / cls))
+    for prefix, class_dir in scan_dirs:
+        for f in iter_items(class_dir, prefix):
+            try:
+                items.append(parse_item(f))
+            except Exception:
+                pass
+    return items
+
+
+def _serialize_toml_value(value: object) -> str:
+    """Serialize a Python value to a TOML literal."""
+    if value is None:
+        raise ValueError("Cannot serialize None — use update_field with None to remove")
+    if isinstance(value, list):
+        items = ", ".join(f'"{v}"' for v in value)
+        return f"[{items}]"
+    if isinstance(value, date):
+        return value.isoformat()
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return str(value)
+    # Default: quoted string
+    escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
+
+
+def update_field(path: Path, field: str, value: object) -> None:
+    """Update a single TOML field in a +++‐delimited frontmatter block.
+
+    If value is None, the field is removed.
+    If the field exists, its line is replaced.
+    If the field does not exist and value is not None, it is appended.
+    """
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("+++\n"):
+        raise ValueError(f"No frontmatter block in {path}")
+    end = text.index("\n+++\n", 4)
+    toml_block = text[4 : end + 1]  # includes trailing newline
+    after = text[end + 5:]  # after closing +++\n
+
+    field_re = re.compile(rf"^{re.escape(field)}\s*=.*$", re.MULTILINE)
+    m = field_re.search(toml_block)
+
+    if value is None:
+        # Remove field
+        if m:
+            toml_block = toml_block[: m.start()] + toml_block[m.end() + 1 :]
+    elif m:
+        # Replace existing
+        toml_block = toml_block[: m.start()] + f"{field} = {_serialize_toml_value(value)}" + toml_block[m.end() :]
+    else:
+        # Append new field
+        toml_block += f"{field} = {_serialize_toml_value(value)}\n"
+
+    path.write_text(f"+++\n{toml_block}+++\n{after}", encoding="utf-8")
+
+
+def remove_from_list_field(path: Path, field: str, value_to_remove: str) -> bool:
+    """Remove a value from a list field in frontmatter.
+
+    Returns True if the field was modified, False if value was not present.
+    Removes the field entirely if the list becomes empty.
+    """
+    item = parse_item(path)
+    current = item.get(field, [])
+    if not isinstance(current, list):
+        return False
+    lower_vals = [v.lower() for v in current]
+    if value_to_remove.lower() not in lower_vals:
+        return False
+    new_list = [v for v in current if v.lower() != value_to_remove.lower()]
+    update_field(path, field, new_list if new_list else None)
+    return True

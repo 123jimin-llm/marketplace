@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from frontmatter import parse_item
+from frontmatter import parse_item, collect_all_items, remove_from_list_field
 
 ID_RE = re.compile(r"^([tp])(\d{4})$")
 
@@ -63,21 +63,22 @@ def main() -> None:
     entry_file = item_path if item_path.is_file() else item_path / "index.md"
 
     # Validate status unless --force
+    status = ""
+    if entry_file.exists():
+        item = parse_item(entry_file)
+        status = item.get("status", "").lower()
     if not args.force:
-        if entry_file.exists():
-            item = parse_item(entry_file)
-            status = item.get("status", "").lower()
-            allowed = DONE_STATUS[prefix]
-            if isinstance(allowed, str):
-                allowed = (allowed,)
-            if status not in allowed:
-                allowed_str = " or ".join(f'"{s}"' for s in allowed)
-                print(
-                    f"Error: {item_id} has status \"{status}\", expected {allowed_str}. "
-                    f"Use --force to override.",
-                    file=sys.stderr,
-                )
-                sys.exit(1)
+        allowed = DONE_STATUS[prefix]
+        if isinstance(allowed, str):
+            allowed = (allowed,)
+        if status not in allowed:
+            allowed_str = " or ".join(f'"{s}"' for s in allowed)
+            print(
+                f"Error: {item_id} has status \"{status}\", expected {allowed_str}. "
+                f"Use --force to override.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
     # Move to archive
     archive_dir = root / "archive" / CLASS_MAP[prefix]
@@ -90,6 +91,29 @@ def main() -> None:
 
     shutil.move(str(item_path), str(dest))
     print(f"Archived {item_path.name} -> archive/{CLASS_MAP[prefix]}/{item_path.name}")
+
+    # Clean up blocked_by references in active items
+    completed = (status == "done") if prefix == "t" else (status == "active")
+    active_items = collect_all_items(root, classes=("task", "plan"))
+
+    for other in active_items:
+        blocked_by = other.get("blocked_by", [])
+        if not isinstance(blocked_by, list):
+            continue
+        if item_id not in [b.lower() for b in blocked_by]:
+            continue
+
+        other_path = other["_path"]
+        other_id = other.get("id", "?")
+
+        if completed and not args.force:
+            remove_from_list_field(other_path, "blocked_by", item_id)
+            print(f"  Removed {item_id} from blocked_by of {other_id}")
+            remaining = [b for b in blocked_by if b.lower() != item_id]
+            if not remaining and other.get("status", "").lower() == "blocked":
+                print(f"  {other_id} has no remaining blockers — consider updating status")
+        else:
+            print(f"  Warning: {other_id} still has {item_id} in blocked_by (archived as {status})")
 
 
 if __name__ == "__main__":

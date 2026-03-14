@@ -25,7 +25,19 @@ prompt = [
   "You want to find every item that references spec s0004. What script do you run and what does it search?",
   "When assigning a new plan ID, why must you scan the archive directory too?",
   "Plans and tasks can be flat files or directories. When is a directory used, and what additional files can a task directory include?",
-  "Specs are never archived. What happens to a spec that is no longer needed?"
+  "Specs are never archived. What happens to a spec that is no longer needed?",
+  "You just archived task t0005 (status='done') and it was in the blocked_by of t0008 and p0004. What happens automatically?",
+  "All tasks implementing plan p0002 are complete. How would you discover this without manually checking each task?",
+  "You run validate.py and see 'dangling reference t9999 in blocked_by of t0003'. What does this mean and how do you fix it?",
+  "You just wrote plan p0005-caching.md with status='draft'. You're confident the design is correct and want to start implementing right away. Can you immediately create tasks that implement p0005? What must happen to p0005 first?",
+  "Task t0010 has modifies = ['s0003'] and its status is now 'done'. You want to archive it. What must you verify about s0003's frontmatter before archiving t0010?",
+  "Plan p0004 contains a detailed inline specification of the caching layer — invalidation rules, TTL defaults, eviction policy. All implementing tasks are done and the plan is ready to archive. Is anything missing? What should have happened to that inline specification during implementation?",
+  "You have plan p0003 (status='active') with three implementing tasks: t0010 (done), t0011 (done), t0012 (done). You want to clean everything up. What is the exact order you archive these items, and why does the order matter?",
+  "After deploying, you notice the code handles timeouts differently from what spec s0003 describes. The code works correctly in production and passes all tests. Is this a problem? What should you do?",
+  "Plan p0003 has targets = ['s0002']. During implementation, you realize task t0010 also needs to create a brand new spec s0005. List every frontmatter change needed across all affected items (p0003, t0010, and the new s0005).",
+  "Plan p0006 is trivial — adding one config field. You want to implement it directly without creating tasks. The lifecycle says 'when approved, create tasks that implement it.' Is skipping tasks ever acceptable? If you do skip them, what lifecycle steps still apply to p0006 itself?",
+  "You archived plan p0001. Tasks t0005 and t0008 both have blocked_by = ['p0001']. p0001 was archived with status='abandoned'. Will the blocked_by references be auto-cleaned? Why or why not?",
+  "Task t0015 modifies spec s0003. You need to write the updated content for s0003. You have two sources: plan p0004 (which describes the intended design) and the actual implementation in src/auth.py. The code in src/auth.py is already complete and tested. Which source should s0003 be based on, and why?"
 ]
 
 [output]
