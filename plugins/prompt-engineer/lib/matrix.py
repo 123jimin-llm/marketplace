@@ -99,7 +99,7 @@ def expand_matrix(config: dict) -> list[dict]:
     # Generation sweep dimensions
     models = _ensure_list(gen.get("model", "claude-sonnet-4-6"))
     temperatures = _ensure_list(gen.get("temperature", 1.0))
-    max_tokens_list = _ensure_list(gen.get("max_tokens", 4096))
+    max_tokens_list = _ensure_list(gen.get("max_tokens")) if "max_tokens" in gen else [None]
 
     # Group prompt entries by role, preserving order within each role
     system_entries = []  # list of list[(label, text)]
@@ -203,7 +203,7 @@ def matrix_dimensions(config: dict) -> dict:
     if len(temps) > 1:
         dims["temperature"] = temps
 
-    max_toks = _ensure_list(gen.get("max_tokens", 4096))
+    max_toks = _ensure_list(gen.get("max_tokens")) if "max_tokens" in gen else [None]
     if len(max_toks) > 1:
         dims["max_tokens"] = max_toks
 
