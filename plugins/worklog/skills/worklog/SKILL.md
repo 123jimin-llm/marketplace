@@ -5,32 +5,17 @@ description: "Manage project tasks, plans, and specs via flat-file worklog. Trig
 
 # Worklog
 
-A flat-file project management system for LLM agents. All state lives in scannable, convention-driven files so any agent session can bootstrap itself from this skill alone. The worklog subtree is **repo-agnostic** — it tracks work independent of what the repository builds. Keep files small and modularized; each file must be readable independently.
+Repo-agnostic flat-file project management. Keep files small; each must be readable independently.
 
-## Directory Structure
+`archive/` (`task/`, `plan/`) is write-only — do not read under normal use.
 
-```text
-worklog/
-├── task/              # Active units of work (subfolders)
-├── plan/              # Future-facing designs (subfolders)
-├── spec/              # Current-state behavioral truths (flat files)
-├── tag/               # Tag definitions (one file per tag)
-└── archive/           # Write-only graveyard — do not read under normal use
-    ├── task/
-    └── plan/
-```
+## Items
 
-## Item Types
+IDs: 4-digit increment per class (`t0001`, `p0001`, `s0001`). Scan active + `archive/` when assigning. Kebab suffix is filename only, not stored in frontmatter. All frontmatter is `+++`-delimited TOML.
 
-| Type | Dir | Naming | Entry file | Statuses | Archive? |
-|------|-----|--------|------------|----------|----------|
-| Spec | `spec/` (flat) | `s{NNNN}-kebab.md` | — (file itself) | — | Never (delete or keep) |
-| Plan | `plan/` (subfolder) | `p{NNNN}-kebab/` | `index.md` | draft, approved, active, abandoned | `archive/plan/` |
-| Task | `task/` (subfolder) | `t{NNNN}-kebab/` | `index.md` | pending, active, blocked, done | `archive/task/` |
+### Spec — `spec/s{NNNN}-kebab.md`
 
-### Spec
-
-Flat files in `spec/`. **Immutable on their own** — only a task may modify a spec. Code diverging from a spec is a bug. Specs are never archived; they exist or they are deleted (use git history for prior versions).
+Flat files. **Immutable** — only a task may modify. Code diverging from a spec is a bug. Never archived (delete or use git history).
 
 ```toml
 +++
@@ -43,12 +28,12 @@ updated_by = []           # task IDs, append-only audit trail
 +++
 ```
 
-### Plan
+### Plan — `plan/p{NNNN}-kebab/`
 
-Subfolders in `plan/`. Archived to `archive/plan/` when fully applied or abandoned.
+Subfolders. Archive to `archive/plan/` when fully applied or abandoned.
 
-- `index.md` — **mandatory**. Problem statement, proposed solution, frontmatter.
-- Additional topic-specific files as needed (`api.md`, `open.md`, etc.).
+- `index.md` — **required**. Problem statement, proposed solution, frontmatter.
+- Additional files as needed.
 
 ```toml
 +++
@@ -57,20 +42,20 @@ title = "Short descriptive title"
 status = "draft"          # draft | approved | active | abandoned
 created = 2025-01-15
 tags = []
-blocked_by = []           # IDs: "t0003", "p0002", etc.
-targets = []              # spec IDs this plan would create or modify
+blocked_by = []           # task or plan IDs
+targets = []              # spec IDs to create or modify
 +++
 ```
 
-Tasks reference plans via `implements` — do not maintain a task list here.
+Do not maintain a task list — tasks reference plans via `implements`.
 
-### Task
+### Task — `task/t{NNNN}-kebab/`
 
-Subfolders in `task/`. On completion (`status = "done"`), move to `archive/task/` promptly.
+Subfolders. Archive to `archive/task/` promptly when `status = "done"`.
 
-- `index.md` — **mandatory**. Defines what this task achieves, carries the frontmatter.
-- `steps.md` — breakdown / checklist. Created only when needed.
-- `notes.md` — scratchpad, decisions, blockers. Created only when needed.
+- `index.md` — **required**. What this task achieves, frontmatter.
+- `steps.md` — checklist. Create when needed.
+- `notes.md` — scratchpad. Create when needed.
 
 ```toml
 +++
@@ -79,31 +64,19 @@ title = "Short imperative title"
 status = "pending"        # pending | active | blocked | done
 created = 2025-01-15
 tags = []
-blocked_by = []           # IDs: "t0003", "p0002", etc.
+blocked_by = []           # task or plan IDs
 implements = []           # plan IDs
 modifies = []             # spec IDs
 +++
 ```
 
-### Tags
+### Tag — `tag/{name}.md`
 
-One file per tag in `tag/`, named `{tag_name}.md`. Brief description, no frontmatter. The filename is the ID.
-
-## ID Format
-
-4-digit increment with a letter prefix. Each class has its own counter. The frontmatter `id` field is the prefix+number only (e.g. `"t0001"`); the kebab suffix is part of the filename/folder name.
-
-| Class | Format | Filename example |
-|---|---|---|
-| Task  | `t{NNNN}` | `t0001-bootstrap-worklog/` |
-| Plan  | `p{NNNN}` | `p0001-plugin-system/` |
-| Spec  | `s{NNNN}` | `s0001-auth.md` |
-
-IDs span active + archive — always scan both when assigning.
+One file per tag. Brief description, no frontmatter.
 
 ## Cross-References
 
-All references are **forward-only**. Use `find-refs.py` for reverse lookups.
+Forward-only. Use `find-refs.py` for reverse lookups.
 
 ```
 plan ──targets────────▶ spec
@@ -116,36 +89,21 @@ spec ──updated_by─────▶ task  (append-only)
 
 ## Lifecycle
 
-1. Write a **plan** (`draft`) describing a desired change and which specs it targets.
-2. When approved, create one or more **tasks** that `implement` it.
-3. Each task works through its steps, modifying **specs** as it goes.
-4. Completed tasks are archived. When all tasks for a plan are done, the plan is archived.
+1. Write a **plan** (`draft`) targeting specs to create or modify.
+2. When approved, create **tasks** that `implement` it.
+3. Tasks work through steps, modifying **specs**.
+4. Archive completed tasks, then the plan when all tasks finish.
 
-Not every task needs a plan — small or reactive work can start directly as a task.
+Small or reactive work can skip the plan — start directly as a task.
 
 ## Scripts
 
-All scripts accept `-w PATH` to set the worklog root (default: `./worklog`).
+All accept `-w PATH` for worklog root (default: `./worklog`). Run `--help` for full usage.
 
 ```bash
-# init-worklog.py — scaffold directory tree with .gitkeep
-init-worklog.py [path]          # default: ./worklog
-
-# next-id.py — print next available ID
-next-id.py task                 # -> t0001
-next-id.py plan                 # -> p0003
-
-# list.py — list items by type/status/tag
-list.py task                    # all tasks
-list.py task -s active          # filter by status
-list.py spec -t auth            # filter by tag
-list.py plan --json             # JSON output
-
-# find-refs.py — reverse-lookup cross-references (frontmatter + body)
-find-refs.py t0001              # who references t0001?
-find-refs.py s0002 --include-archive
-
-# archive.py — move completed items to archive/
-archive.py t0001                # task must be "done"
-archive.py p0003 --force        # skip status check (plans: "abandoned" or "active")
+init-worklog.py [path]                  # scaffold directory tree
+next-id.py task                         # next available ID (e.g. t0015)
+list.py task -s active                  # list items; -s status, -t tag, --json
+find-refs.py t0001 [--include-archive]  # reverse-lookup references to an ID
+archive.py t0001 [--force]              # move completed item to archive/
 ```
