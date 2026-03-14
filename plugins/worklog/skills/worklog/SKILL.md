@@ -11,68 +11,47 @@ Repo-agnostic flat-file project management. Keep files small; each must be reada
 
 ## Items
 
-IDs: 4-digit increment per class (`t0001`, `p0001`, `s0001`). Scan active + `archive/` when assigning. Kebab suffix is filename only, not stored in frontmatter. All frontmatter is `+++`-delimited TOML.
+IDs: 4-digit increment per class (`t0001`, `p0001`, `s0001`). Scan active + `archive/` when assigning. Kebab suffix is filename only, not in frontmatter.
 
-### Spec — `spec/s{NNNN}-kebab.md`
+| Type | Location | Entry file | Statuses | Archive to |
+|------|----------|------------|----------|------------|
+| Spec | `spec/s{NNNN}-kebab.md` | file itself | — | never (delete or git history) |
+| Plan | `plan/p{NNNN}-kebab/` | `index.md` | draft, approved, active, abandoned | `archive/plan/` |
+| Task | `task/t{NNNN}-kebab/` | `index.md` | pending, active, blocked, done | `archive/task/` |
 
-Flat files. **Immutable** — only a task may modify. Code diverging from a spec is a bug. Never archived (delete or use git history).
+- Specs are **immutable** — only a task may modify. Code diverging from a spec is a bug.
+- Plans: `index.md` + additional files as needed. Do not maintain a task list.
+- Tasks: `index.md` + optional `steps.md` (checklist), `notes.md` (scratchpad).
+- Tags: `tag/{name}.md` — brief description, no frontmatter.
 
-```toml
-+++
-id = "s0001"
-title = "Topic name"
-created = 2025-01-15
-updated = 2025-01-15
-tags = []
-updated_by = []           # task IDs, append-only audit trail
-+++
-```
+### Frontmatter
 
-### Plan — `plan/p{NNNN}-kebab/`
-
-Subfolders. Archive to `archive/plan/` when fully applied or abandoned.
-
-- `index.md` — **required**. Problem statement, proposed solution, frontmatter.
-- Additional files as needed.
-
-```toml
-+++
-id = "p0001"
-title = "Short descriptive title"
-status = "draft"          # draft | approved | active | abandoned
-created = 2025-01-15
-tags = []
-blocked_by = []           # task or plan IDs
-targets = []              # spec IDs to create or modify
-+++
-```
-
-Do not maintain a task list — tasks reference plans via `implements`.
-
-### Task — `task/t{NNNN}-kebab/`
-
-Subfolders. Archive to `archive/task/` promptly when `status = "done"`.
-
-- `index.md` — **required**. What this task achieves, frontmatter.
-- `steps.md` — checklist. Create when needed.
-- `notes.md` — scratchpad. Create when needed.
+`+++`-delimited TOML. Include only fields marked for the type.
 
 ```toml
 +++
 id = "t0001"
-title = "Short imperative title"
-status = "pending"        # pending | active | blocked | done
+title = "Fix login timeout"
+status = "pending"
 created = 2025-01-15
-tags = []
-blocked_by = []           # task or plan IDs
-implements = []           # plan IDs
-modifies = []             # spec IDs
+tags = ["auth"]
+implements = ["p0003"]
 +++
 ```
 
-### Tag — `tag/{name}.md`
-
-One file per tag. Brief description, no frontmatter.
+| Field | Spec | Plan | Task | Values / notes |
+|-------|:----:|:----:|:----:|----------------|
+| `id` | x | x | x | e.g. `"t0001"` |
+| `title` | x | x | x | string |
+| `created` | x | x | x | `YYYY-MM-DD` |
+| `updated` | x | | | `YYYY-MM-DD` |
+| `tags` | x | x | x | `[]` |
+| `status` | | x | x | see statuses above |
+| `blocked_by` | | x | x | task/plan IDs |
+| `targets` | | x | | spec IDs to create/modify |
+| `implements` | | | x | plan IDs |
+| `modifies` | | | x | spec IDs |
+| `updated_by` | x | | | task IDs, append-only |
 
 ## Cross-References
 
