@@ -23,7 +23,7 @@ Directory format: `{id}-kebab/index.md` + supporting files. Flat format: `{id}-k
 
 Default to flat files. When supporting files are needed (`steps.md`, `notes.md`), promote to directory: move `{id}.md` → `{id}/index.md`, then add files alongside.
 
-- Specs are **immutable** — only a task may modify. Code diverging from a spec is a bug.
+- Specs are **immutable** — only a task may modify. Write spec content from the plan, not the codebase. Code diverging from a spec is a bug.
 - Plans: flat file, or directory with `index.md` + additional files as needed. Do not maintain a task list.
 - Tasks: flat file, or directory with `index.md` + optional `steps.md` (checklist), `notes.md` (scratchpad).
 - Tags: `tags.md` at worklog root — one per line as `- name: description`.

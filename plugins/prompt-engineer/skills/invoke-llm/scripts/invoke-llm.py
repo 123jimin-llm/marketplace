@@ -63,12 +63,18 @@ def _results_to_toml(results: list) -> str:
     return "\n\n".join(parts) + "\n"
 
 
-def run_matrix(config_path, dry_run, json_output, toml_output):
+def run_matrix(config_path, dry_run, json_output, toml_output, overrides=None):
     """Run a TOML-configured matrix of LLM invocations."""
     from matrix import load_config, expand_matrix, matrix_dimensions
     from display import render_table
 
     config = load_config(config_path)
+
+    # Apply CLI overrides to [generation] — replaces config values entirely
+    if overrides:
+        gen = config.setdefault("generation", {})
+        for key, value in overrides.items():
+            gen[key] = value
     output_file = config.get("output", {}).get("file")
 
     if dry_run:
@@ -184,20 +190,20 @@ def main():
     )
     parser.add_argument(
         "-m", "--model",
-        default="claude-sonnet-4-6",
-        help="Model ID (default: claude-sonnet-4-6)",
+        default=None,
+        help="Model ID (default: claude-sonnet-4-6; overrides config in -c mode)",
     )
     parser.add_argument(
         "-t", "--temperature",
         type=float,
-        default=1.0,
-        help="Temperature (default: 1.0)",
+        default=None,
+        help="Temperature (default: 1.0; overrides config in -c mode)",
     )
     parser.add_argument(
         "--max-tokens",
         type=int,
-        default=4096,
-        help="Max output tokens (default: 4096)",
+        default=None,
+        help="Max output tokens (default: 4096; overrides config in -c mode)",
     )
     parser.add_argument(
         "-o", "--output",
@@ -233,24 +239,35 @@ def main():
 
     # TOML config mode
     if args.config:
-        # Check mutual exclusivity with single-shot flags
+        # Prompt flags are mutually exclusive with config mode
         single_shot_used = any([
             args.input, args.user_strings, args.user_files,
             args.system_strings, args.system_files,
         ])
-        non_default = (args.model != "claude-sonnet-4-6" or
-                       args.temperature != 1.0 or
-                       args.max_tokens != 4096)
-        if single_shot_used or non_default:
-            parser.error("-c/--config is mutually exclusive with positional, -u, -U, -s, -S, -m, -t, --max-tokens")
+        if single_shot_used:
+            parser.error("-c/--config is mutually exclusive with positional, -u, -U, -s, -S")
 
         if args.output:
             print("Warning: -o ignored in config mode (use [output].file in TOML)", file=sys.stderr)
 
-        run_matrix(args.config, args.dry_run, args.json_output, args.toml_output)
+        # Collect generation overrides from CLI flags
+        overrides = {}
+        if args.model is not None:
+            overrides["model"] = args.model
+        if args.temperature is not None:
+            overrides["temperature"] = args.temperature
+        if args.max_tokens is not None:
+            overrides["max_tokens"] = args.max_tokens
+
+        run_matrix(args.config, args.dry_run, args.json_output, args.toml_output, overrides or None)
         return
 
-    # --- Single-shot mode (unchanged) ---
+    # --- Single-shot mode ---
+
+    # Apply defaults for single-shot mode
+    model = args.model or "claude-sonnet-4-6"
+    temperature = args.temperature if args.temperature is not None else 1.0
+    max_tokens = args.max_tokens or 4096
 
     # Build user message: positional first, then -u strings, then -U files
     user_strings = []
@@ -270,9 +287,9 @@ def main():
         result = invoke_llm(
             user_message,
             system=system,
-            model=args.model,
-            temperature=args.temperature,
-            max_tokens=args.max_tokens,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
