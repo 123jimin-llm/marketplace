@@ -28,4 +28,4 @@ prompt = [
 ]
 
 [output]
-file = "quiz-results.jsonl"
+file = "quiz-results.toml"

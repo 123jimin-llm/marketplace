@@ -109,8 +109,9 @@ def run_matrix(config_path, dry_run, json_output, toml_output):
     if output_file:
         base_dir = config["_base_dir"]
         out_path = base_dir / output_file
+        use_toml = toml_output or out_path.suffix == ".toml"
         with open(out_path, "w", encoding="utf-8") as f:
-            if toml_output:
+            if use_toml:
                 f.write(_results_to_toml(results))
             else:
                 for r in results:

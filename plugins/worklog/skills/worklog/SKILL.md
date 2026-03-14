@@ -7,7 +7,7 @@ description: "Manage project tasks, plans, and specs via flat-file worklog. Trig
 
 Repo-agnostic flat-file project management. Keep files small; each must be readable independently.
 
-`archive/` (`task/`, `plan/`) is write-only — do not read under normal use.
+`archive/` (`archive/task/`, `archive/plan/`) is write-only — do not read under normal use.
 
 ## Items
 
