@@ -95,7 +95,12 @@ def toml_str(s: str, *, multiline: bool = False) -> str:
     Otherwise, newlines are escaped (safe default for config fields).
     """
     if multiline and "\n" in s:
-        escaped = s.replace("\\", "\\\\").replace('"""', '""\\"')
+        escaped = s.replace("\\", "\\\\")
+        # Break any run of 3+ quotes so it can't collide with the delimiter.
+        escaped = re.sub(r'"{3,}', lambda m: '"\\"' * (len(m.group()) // 2) + '"' * (len(m.group()) % 2), escaped)
+        # A trailing " or "" before the closing """ would form """" or """"".
+        if escaped.endswith('"'):
+            escaped = escaped[:-1] + '\\"'
         return f'"""\n{escaped}"""'
     escaped = s.replace("\\", "\\\\").replace('"', '\\"')
     escaped = escaped.replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r")
