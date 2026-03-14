@@ -267,7 +267,7 @@ def main():
     # Apply defaults for single-shot mode
     model = args.model or "claude-sonnet-4-6"
     temperature = args.temperature if args.temperature is not None else 1.0
-    max_tokens = args.max_tokens or 4096
+    max_tokens = args.max_tokens  # None = Claude defaults to 4096, OpenAI unlimited
 
     # Build user message: positional first, then -u strings, then -U files
     user_strings = []

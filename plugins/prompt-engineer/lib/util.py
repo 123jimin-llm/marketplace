@@ -113,11 +113,12 @@ def invoke_llm(
     system: str | None = None,
     model: str = "claude-sonnet-4-6",
     temperature: float = 1.0,
-    max_tokens: int = 4096,
+    max_tokens: int | None = None,
 ) -> dict:
     """Invoke an LLM and return response with metadata.
 
     Routes to Anthropic or OpenAI based on model name.
+    max_tokens is required for Claude (defaults to 4096); optional for OpenAI (omitted if None).
     Returns { response, model, input_tokens, output_tokens, latency_ms, stop_reason }.
     """
     start = time.perf_counter()
@@ -127,7 +128,7 @@ def invoke_llm(
 
         kwargs = dict(
             model=model,
-            max_tokens=max_tokens,
+            max_tokens=max_tokens or 4096,
             temperature=temperature,
             messages=[{"role": "user", "content": user_message}],
         )
@@ -155,12 +156,15 @@ def invoke_llm(
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": user_message})
 
-        resp = OpenAI().chat.completions.create(
+        kwargs = dict(
             model=model,
-            max_completion_tokens=max_tokens,
             temperature=temperature,
             messages=messages,
         )
+        if max_tokens is not None:
+            kwargs["max_completion_tokens"] = max_tokens
+
+        resp = OpenAI().chat.completions.create(**kwargs)
         elapsed = (time.perf_counter() - start) * 1000
 
         if not resp.choices:
