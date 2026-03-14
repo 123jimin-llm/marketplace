@@ -18,18 +18,19 @@ from frontmatter import parse_item
 ID_RE = re.compile(r"^([tp])(\d{4})$")
 
 CLASS_MAP = {"t": "task", "p": "plan"}
-ENTRY_FILE = {"t": "index.md", "p": "index.md"}
 DONE_STATUS = {"t": "done", "p": ("abandoned", "active")}  # plans archive when fully applied or abandoned
 
 
-def find_item_dir(worklog_root: Path, prefix: str, item_id: str) -> Path | None:
-    """Find the subfolder for the given item ID."""
+def find_item(worklog_root: Path, prefix: str, item_id: str) -> Path | None:
+    """Find the item path (file or directory) for the given item ID."""
     class_dir = worklog_root / CLASS_MAP[prefix]
     if not class_dir.is_dir():
         return None
-    for d in class_dir.iterdir():
-        if d.is_dir() and d.name.startswith(item_id):
-            return d
+    for entry in class_dir.iterdir():
+        if entry.is_file() and entry.suffix == ".md" and entry.stem.startswith(item_id):
+            return entry
+        if entry.is_dir() and entry.name.startswith(item_id):
+            return entry
     return None
 
 
@@ -53,14 +54,16 @@ def main() -> None:
         print(f"Error: worklog directory not found: {root}", file=sys.stderr)
         sys.exit(1)
 
-    item_dir = find_item_dir(root, prefix, item_id)
-    if not item_dir:
+    item_path = find_item(root, prefix, item_id)
+    if not item_path:
         print(f"Error: no {CLASS_MAP[prefix]} found matching '{item_id}'.", file=sys.stderr)
         sys.exit(1)
 
+    # Determine the frontmatter file to check
+    entry_file = item_path if item_path.is_file() else item_path / "index.md"
+
     # Validate status unless --force
     if not args.force:
-        entry_file = item_dir / ENTRY_FILE[prefix]
         if entry_file.exists():
             item = parse_item(entry_file)
             status = item.get("status", "").lower()
@@ -80,13 +83,13 @@ def main() -> None:
     archive_dir = root / "archive" / CLASS_MAP[prefix]
     archive_dir.mkdir(parents=True, exist_ok=True)
 
-    dest = archive_dir / item_dir.name
+    dest = archive_dir / item_path.name
     if dest.exists():
         print(f"Error: archive destination already exists: {dest}", file=sys.stderr)
         sys.exit(1)
 
-    shutil.move(str(item_dir), str(dest))
-    print(f"Archived {item_dir.name} -> archive/{CLASS_MAP[prefix]}/{item_dir.name}")
+    shutil.move(str(item_path), str(dest))
+    print(f"Archived {item_path.name} -> archive/{CLASS_MAP[prefix]}/{item_path.name}")
 
 
 if __name__ == "__main__":

@@ -13,7 +13,6 @@ DIRS = [
     "task",
     "plan",
     "spec",
-    "tag",
     "archive",
     "archive/task",
     "archive/plan",
@@ -30,6 +29,12 @@ def init_worklog(root: Path) -> None:
         if not gitkeep.exists() and rel:  # skip root
             gitkeep.touch()
             print(f"  wrote {gitkeep}")
+
+    # Create tags.md at worklog root if it doesn't exist
+    tags_file = root / "tags.md"
+    if not tags_file.exists():
+        tags_file.write_text("# Tags\n", encoding="utf-8")
+        print(f"  wrote {tags_file}")
 
 
 def main() -> None:

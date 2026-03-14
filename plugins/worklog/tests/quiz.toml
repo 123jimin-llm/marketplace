@@ -16,7 +16,7 @@ separator = "\n---\n"
 [[prompts]]
 role = "user"
 prompt = [
-  "You need to create a new task. The highest existing task ID (across active and archive) is t0014. What ID and folder name would you use for a task titled 'Fix login timeout'?",
+  "You need to create a new task. The highest existing task ID (across active and archive) is t0014. What ID and file name would you use for a task titled 'Fix login timeout'?",
   "A spec s0003-auth.md currently documents the auth flow. Task t0015 modifies it. What exact change must be made to s0003's frontmatter, and which field?",
   "Can a plan directly modify a spec? Why or why not?",
   "You have plan p0002 with status='active' and all its tasks are done. What do you do with it and where does it go?",
@@ -24,7 +24,7 @@ prompt = [
   "A task t0008 is blocked by plan p0005 and implements plan p0003. It modifies specs s0001 and s0002. Write its complete frontmatter.",
   "You want to find every item that references spec s0004. What script do you run and what does it search?",
   "When assigning a new plan ID, why must you scan the archive directory too?",
-  "What is the entry file name for both plans and tasks? What additional files can a task include?",
+  "Plans and tasks can be flat files or directories. When is a directory used, and what additional files can a task directory include?",
   "Specs are never archived. What happens to a spec that is no longer needed?"
 ]
 

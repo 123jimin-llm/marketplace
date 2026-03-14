@@ -14,40 +14,21 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from frontmatter import parse_item
+from frontmatter import parse_item, iter_items, _CLASS_PREFIX
 
 CLASS_MAP = {"task": "task", "plan": "plan", "spec": "spec"}
-
-# Frontmatter file within each item type
-ENTRY_FILE = {"task": "index.md", "plan": "index.md"}
 
 
 def find_items(worklog_root: Path, item_class: str) -> list[dict]:
     """Find and parse all items of the given class."""
     class_dir = worklog_root / CLASS_MAP[item_class]
-    if not class_dir.is_dir():
-        return []
-
+    prefix = _CLASS_PREFIX[item_class]
     items = []
-    if item_class == "spec":
-        # Specs are flat files
-        for f in sorted(class_dir.glob("s[0-9]*.md")):
-            try:
-                items.append(parse_item(f))
-            except Exception as e:
-                print(f"Warning: failed to parse {f}: {e}", file=sys.stderr)
-    else:
-        # Tasks and plans are subfolders
-        entry = ENTRY_FILE[item_class]
-        for d in sorted(class_dir.iterdir()):
-            if not d.is_dir():
-                continue
-            fm_file = d / entry
-            if fm_file.exists():
-                try:
-                    items.append(parse_item(fm_file))
-                except Exception as e:
-                    print(f"Warning: failed to parse {fm_file}: {e}", file=sys.stderr)
+    for f in iter_items(class_dir, prefix):
+        try:
+            items.append(parse_item(f))
+        except Exception as e:
+            print(f"Warning: failed to parse {f}: {e}", file=sys.stderr)
     return items
 
 

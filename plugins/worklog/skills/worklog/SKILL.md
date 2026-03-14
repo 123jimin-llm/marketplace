@@ -13,16 +13,20 @@ Repo-agnostic flat-file project management. Keep files small; each must be reada
 
 IDs: 4-digit increment per class (`t0001`, `p0001`, `s0001`). Scan active + `archive/` when assigning. Kebab suffix is filename only, not in frontmatter.
 
-| Type | Location | Entry file | Statuses | Archive to |
-|------|----------|------------|----------|------------|
-| Spec | `spec/s{NNNN}-kebab.md` | file itself | — | never (delete or git history) |
-| Plan | `plan/p{NNNN}-kebab/` | `index.md` | draft, approved, active, abandoned | `archive/plan/` |
-| Task | `task/t{NNNN}-kebab/` | `index.md` | pending, active, blocked, done | `archive/task/` |
+| Type | Location | Statuses | Archive to |
+|------|----------|----------|------------|
+| Spec | `spec/s{NNNN}-kebab.md` | — | never |
+| Plan | `plan/p{NNNN}-kebab.md` or `plan/p{NNNN}-kebab/` | draft, approved, active, abandoned | `archive/plan/` |
+| Task | `task/t{NNNN}-kebab.md` or `task/t{NNNN}-kebab/` | pending, active, blocked, done | `archive/task/` |
+
+Directory format: `{id}-kebab/index.md` + supporting files. Flat format: `{id}-kebab.md` (default for new items).
+
+Default to flat files. When supporting files are needed (`steps.md`, `notes.md`), promote to directory: move `{id}.md` → `{id}/index.md`, then add files alongside.
 
 - Specs are **immutable** — only a task may modify. Code diverging from a spec is a bug.
-- Plans: `index.md` + additional files as needed. Do not maintain a task list.
-- Tasks: `index.md` + optional `steps.md` (checklist), `notes.md` (scratchpad).
-- Tags: `tag/{name}.md` — brief description, no frontmatter.
+- Plans: flat file, or directory with `index.md` + additional files as needed. Do not maintain a task list.
+- Tasks: flat file, or directory with `index.md` + optional `steps.md` (checklist), `notes.md` (scratchpad).
+- Tags: `tags.md` at worklog root — one per line as `- name: description`.
 
 ### Frontmatter
 

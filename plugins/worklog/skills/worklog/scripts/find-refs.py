@@ -12,13 +12,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from frontmatter import parse_item
+from frontmatter import parse_item, iter_items, _CLASS_PREFIX
 
 # Frontmatter fields that contain cross-references
 REF_FIELDS = ("blocked_by", "implements", "modifies", "targets", "updated_by")
-
-# Entry files within item subfolders
-ENTRY_FILE = {"task": "index.md", "plan": "index.md"}
 
 
 def collect_items(worklog_root: Path, include_archive: bool) -> list[dict]:
@@ -37,25 +34,12 @@ def collect_items(worklog_root: Path, include_archive: bool) -> list[dict]:
         ])
 
     for item_class, class_dir in scan_dirs:
-        if not class_dir.is_dir():
-            continue
-
-        if item_class == "spec":
-            for f in class_dir.glob("s[0-9]*.md"):
-                try:
-                    items.append(parse_item(f))
-                except Exception:
-                    pass
-        else:
-            entry = ENTRY_FILE[item_class]
-            for d in class_dir.iterdir():
-                if d.is_dir():
-                    fm_file = d / entry
-                    if fm_file.exists():
-                        try:
-                            items.append(parse_item(fm_file))
-                        except Exception:
-                            pass
+        prefix = _CLASS_PREFIX[item_class]
+        for f in iter_items(class_dir, prefix):
+            try:
+                items.append(parse_item(f))
+            except Exception:
+                pass
     return items
 
 
