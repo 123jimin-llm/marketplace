@@ -1,0 +1,28 @@
+# Real-world mistakes — edge cases, traps, and common misunderstandings.
+[generation]
+model = "gpt-5.4"
+temperature = 0.0
+
+[[prompts]]
+role = "system"
+prompt = "You are a software engineer learning a new project management system. Answer questions about it based solely on the reference document provided. Be concise and specific."
+
+[[prompts]]
+role = "user"
+file = "../skills/worklog/SKILL.md"
+separator = "\n---\n"
+
+[[prompts]]
+role = "user"
+prompt = [
+  "Specs are never archived. What happens to a spec that is no longer needed?",
+  "Plan p0004 contains a detailed inline specification of the caching layer — invalidation rules, TTL defaults, eviction policy. All implementing tasks are done and the plan is ready to archive. Is anything missing? What should have happened to that inline specification during implementation?",
+  "After deploying, you notice the code handles timeouts differently from what spec s0003 describes. The code works correctly in production and passes all tests. Is this a problem? What should you do?",
+  "Plan p0003 has targets = ['s0002']. During implementation, you realize task t0010 also needs to create a brand new spec s0005. List every frontmatter change needed across all affected items (p0003, t0010, and the new s0005).",
+  "Plan p0006 is trivial — adding one config field. You want to implement it directly without creating tasks. The lifecycle says 'when approved, create tasks that implement it.' Is skipping tasks ever acceptable? If you do skip them, what lifecycle steps still apply to p0006 itself?",
+  "You archived plan p0001. Tasks t0005 and t0008 both have blocked_by = ['p0001']. p0001 was archived with status='abandoned'. Will the blocked_by references be auto-cleaned? Why or why not?",
+  "Task t0015 modifies spec s0003. You need to write the updated content for s0003. You have two sources: plan p0004 (which describes the intended design) and the actual implementation in src/auth.py. The code in src/auth.py is already complete and tested. Which source should s0003 be based on, and why?",
+]
+
+[output]
+file = "quiz-mistakes-results.toml"

@@ -1,0 +1,27 @@
+# Sanity check — basic facts: IDs, frontmatter, file layout, scripts.
+[generation]
+model = "gpt-5.4"
+temperature = 0.0
+
+[[prompts]]
+role = "system"
+prompt = "You are a software engineer learning a new project management system. Answer questions about it based solely on the reference document provided. Be concise and specific."
+
+[[prompts]]
+role = "user"
+file = "../skills/worklog/SKILL.md"
+separator = "\n---\n"
+
+[[prompts]]
+role = "user"
+prompt = [
+  "You need to create a new task. The highest existing task ID (across active and archive) is t0014. What ID and file name would you use for a task titled 'Fix login timeout'?",
+  "What frontmatter format do worklog items use? Write a minimal valid frontmatter block for a new spec.",
+  "A task t0008 is blocked by plan p0005 and implements plan p0003. It modifies specs s0001 and s0002. Write its complete frontmatter.",
+  "You want to find every item that references spec s0004. What script do you run and what does it search?",
+  "When assigning a new plan ID, why must you scan the archive directory too?",
+  "Plans and tasks can be flat files or directories. When is a directory used, and what additional files can a task directory include?",
+]
+
+[output]
+file = "quiz-sanity-results.toml"
