@@ -52,6 +52,7 @@ invoke-llm.py -c run.toml --toml            # TOML output to stdout
 ### TOML schema
 
 ```toml
+# Used with prompt-engineer:invoke-llm skill.
 [generation]
 model = ["claude-sonnet-4-6", "gpt-5-mini"]   # scalar = fixed, array = sweep
 temperature = [0.0, 0.5, 1.0]
@@ -78,6 +79,8 @@ separator = "\n---\n"                 # per-entry override (join point before th
 [output]
 file = "results.jsonl"
 ```
+
+**Comments:** Start config files with `# Used with prompt-engineer:invoke-llm skill.` so they're identifiable as inputs to this skill.
 
 Matrix = cartesian product of all array values across `[generation]` and `[[prompts]]`. Above example: 2 models × 3 temps × 2 system files = 12 runs.
 

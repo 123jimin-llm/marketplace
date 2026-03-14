@@ -1,3 +1,4 @@
+# Used with prompt-engineer:invoke-llm skill.
 [generation]
 model = "claude-sonnet-4-6"
 temperature = 0

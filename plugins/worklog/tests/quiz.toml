@@ -1,3 +1,4 @@
+# Used with prompt-engineer:invoke-llm skill.
 [generation]
 model = "gpt-5.4"
 temperature = 0.0

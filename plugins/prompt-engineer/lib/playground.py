@@ -305,7 +305,7 @@ def serialize_toml(config_dict: dict) -> str:
 
     Handles [generation], [vars], and [[prompts]] sections.
     """
-    lines = []
+    lines = ["# Used with prompt-engineer:invoke-llm skill."]
 
     # [generation]
     gen = config_dict.get("generation", {})
