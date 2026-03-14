@@ -16,7 +16,7 @@ separator = "\n---\n"
 [[prompts]]
 role = "user"
 prompt = [
-  # Specs are never archived or deleted. Create a task to mark it deprecated/obsolete via modification.
+  # Create a task to archive or remove the spec. Only a task may modify or archive a spec. Archive to archive/spec/.
   "A spec is no longer relevant to the project. How do you clean it up?",
   # Trap: inline spec content must be extracted to spec/ files before archiving. Check targets are satisfied, specs exist with correct content from plan, updated_by wired.
   "Plan p0004 contains a detailed inline specification of the caching layer — invalidation rules, TTL defaults, eviction policy. All implementing tasks are done. You're about to archive p0004. Walk through what you'd check before archiving.",

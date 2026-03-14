@@ -7,7 +7,7 @@ description: "Manage project tasks, plans, and specs via flat-file worklog. Trig
 
 Repo-agnostic flat-file project management. Keep files small; each must be readable independently.
 
-`archive/` (`archive/task/`, `archive/plan/`) is write-only — do not read under normal use.
+`archive/` (`archive/task/`, `archive/plan/`, `archive/spec/`) is write-only — do not read under normal use.
 
 ## Items
 
@@ -15,7 +15,7 @@ IDs: 4-digit increment per class (`t0001`, `p0001`, `s0001`). Scan active + `arc
 
 | Type | Location | Statuses | Archive to |
 |------|----------|----------|------------|
-| Spec | `spec/s{NNNN}-kebab.md` | — | never |
+| Spec | `spec/s{NNNN}-kebab.md` | — | `archive/spec/` |
 | Plan | `plan/p{NNNN}-kebab.md` or `plan/p{NNNN}-kebab/` | draft, approved, active, abandoned | `archive/plan/` |
 | Task | `task/t{NNNN}-kebab.md` or `task/t{NNNN}-kebab/` | pending, active, blocked, done | `archive/task/` |
 
@@ -23,7 +23,7 @@ Directory format: `{id}-kebab/index.md` + supporting files. Flat format: `{id}-k
 
 Default to flat files. When supporting files are needed (`steps.md`, `notes.md`), promote to directory: move `{id}.md` → `{id}/index.md`, then add files alongside.
 
-- Specs are **immutable** — only a task may modify. Write spec content from the plan, not the codebase. Code diverging from a spec is a bug.
+- Specs are **immutable** — only a task may modify or archive. Write spec content from the plan, not the codebase. Code diverging from a spec is a bug.
 - Plans: flat file, or directory with `index.md` + additional files as needed. Do not maintain a task list.
 - Tasks: flat file, or directory with `index.md` + optional `steps.md` (checklist), `notes.md` (scratchpad).
 - Tags: `tags.md` at worklog root — one per line as `- name: description`.
