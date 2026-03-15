@@ -81,6 +81,20 @@ Use `find-refs.py` to find which tasks modified a spec (reverse lookup of `modif
 
 Small or reactive work can skip the plan — start directly as a task.
 
+## Source Code Markers
+
+When a task modifies source code that implements a spec, mark the connection using `@worklog sNNNN` in comments. Use the comment style appropriate for the language and codebase conventions.
+
+**File-level** — at the top of a file, listing all specs it implements:
+
+    @worklog s0001 (login flow), s0003 (session handling)
+
+**Inline** — near specific code tied to a spec:
+
+    @worklog s0001
+
+When you encounter an existing `@worklog` marker while editing code, invoke `/worklog` to check whether the referenced spec needs updating.
+
 ## Validation
 
 Run `worklog/script/validate.py` after any batch of changes. It checks:

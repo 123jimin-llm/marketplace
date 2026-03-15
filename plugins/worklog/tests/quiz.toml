@@ -44,6 +44,13 @@ separator = "\n---\n"
 #   3. Write from plan p0004, NOT from src/auth.py. Spec content derives from plan intent. Code may have bugs or drift.
 #   4. Trap: must verify s0005 and s0006 actually exist with plan-derived content. validate.py only checks ref existence, not content correctness. Use find-refs.py to confirm tasks reference the specs via modifies.
 #   5. Trap: t0020 is missing modifies=["s0008"]. Spec s0008 was never created. Code alone doesn't fulfill plan targets — spec must exist with content from plan.
+#
+# Group 5 — Source code markers & spec awareness
+#   1. The file contains @worklog s0003. Fixing the timeout logic changes behavior described by s0003. Must invoke /worklog to check whether s0003 needs updating.
+#   2. Task modifies s0005. Must add @worklog s0005 marker — file-level at top, inline near rate-limit logic. Comment style matches language.
+#   3. @worklog s0001 and s0003 are in the file. Refactoring session logic means s0003-related code moves to a new file. Must move/replicate the s0003 marker to the new file, invoke /worklog for both specs since code structure changed.
+#   4. @worklog s0010 references an archived spec. Investigate with find-refs.py s0010 --include-archive. Remove or update the marker depending on whether a successor spec exists.
+#   5. Marker alone is not enough. Task frontmatter must include modifies=["s0002"]. Markers are code-level signals; modifies is the machine-checked cross-ref in worklog.
 
 [[prompts]]
 role = "user"
@@ -107,6 +114,55 @@ Each scenario below is in a separate worklog. Walk through what you would do. Be
 4. Plan p0003 (status="active", targets = ["s0005", "s0006"]) has two implementing tasks: t0010 (done, modifies = ["s0005"]) and t0011 (done, modifies = ["s0006"]). validate.py reports no errors. You're ready to archive. Walk through the steps.
 
 5. Plan p0007 (status="active", targets = ["s0008"]) has one task: t0020 (implements = ["p0007"]). t0020 has written the code in src/payments.py, all tests pass, and t0020 is marked done. You want to archive everything. What do you do?\
+""",
+  """\
+Each scenario is independent. Walk through what you would do.
+
+1. You are fixing a bug where sessions expire too early. Here is the top of src/session.py:
+
+    # @worklog s0003 (session handling)
+    # Manages session lifecycle: creation, renewal, expiry.
+    import time
+    from config import SESSION_DEFAULTS
+
+    class SessionManager:
+        def expire(self, session):
+            # BUG: uses seconds instead of minutes
+            if time.time() - session.last_active > SESSION_DEFAULTS["timeout"]:
+                session.invalidate()
+
+    Fix the units bug. Walk through everything you'd do.
+
+2. You are implementing task t0012 (implements p0006, modifies = ["s0005"]). The task adds rate-limiting to src/api.py. Here is the current file:
+
+    from flask import Flask, request
+    app = Flask(__name__)
+
+    @app.route("/data")
+    def get_data():
+        return fetch_data(request.args)
+
+    Write the rate-limited version. Walk through everything you'd do.
+
+3. You are refactoring src/auth.py to extract session logic into src/session_manager.py. Behavior is unchanged. Here is the top of src/auth.py:
+
+    # @worklog s0001 (login flow), s0003 (session handling)
+    from db import users, sessions
+
+    You're moving the session-related functions (everything using `sessions`) into the new file. Walk through everything you'd do.
+
+4. You are adding a cache warmup routine to src/cache.py. Here is the file:
+
+    # @worklog s0010 (cache invalidation)
+    from redis import Redis
+    cache = Redis()
+
+    def invalidate(key):
+        cache.delete(key)
+
+    You check the worklog and find s0010 was archived. Walk through what you'd do.
+
+5. You completed task t0025 (implements p0008, modifies = ["s0002"]). You've written code in src/notifications.py with `# @worklog s0002` near the push-notification logic. The task is marked done and you're ready to archive. Walk through the checks.\
 """,
 ]
 
