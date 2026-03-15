@@ -12,8 +12,7 @@ import shutil
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from frontmatter import parse_item, collect_all_items, remove_from_list_field
+from _frontmatter import parse_item, collect_all_items, remove_from_list_field
 
 ID_RE = re.compile(r"^([tp])(\d{4})$")
 

@@ -11,8 +11,7 @@ import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from frontmatter import (
+from _frontmatter import (
     CLASS_PREFIX,
     collect_all_items,
     iter_items,
@@ -23,7 +22,7 @@ from frontmatter import (
 TASK_STATUSES = {"pending", "active", "blocked", "done"}
 PLAN_STATUSES = {"draft", "approved", "active", "abandoned"}
 REQUIRED_FIELDS = ("id", "title", "created")
-REF_FIELDS = ("blocked_by", "implements", "modifies", "targets", "updated_by")
+REF_FIELDS = ("blocked_by", "implements", "modifies", "targets")
 
 
 def main() -> None:
@@ -81,6 +80,10 @@ def main() -> None:
         for field in REQUIRED_FIELDS:
             if field not in item:
                 errors.append(f"{item_id or path}: missing required field '{field}'")
+
+        # Deprecated field
+        if "updated_by" in item:
+            warnings.append(f"{item_id}: deprecated field 'updated_by' — remove it (use find-refs.py for reverse lookups)")
 
         # Status required for tasks/plans
         if item_class in ("task", "plan") and "status" not in item:

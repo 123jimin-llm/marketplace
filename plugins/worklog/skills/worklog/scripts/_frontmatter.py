@@ -64,21 +64,6 @@ def iter_items(class_dir: Path, prefix: str) -> list[Path]:
     return sorted(results, key=lambda p: p.name if p.name != "index.md" else p.parent.name)
 
 
-def promote_to_dir(flat_file: Path) -> Path:
-    """Promote a flat item file to directory format.
-
-    task/t0001-foo.md → task/t0001-foo/index.md
-    Returns the new path.
-    """
-    if not flat_file.is_file() or flat_file.suffix != ".md":
-        raise ValueError(f"Expected a .md file, got: {flat_file}")
-    dir_path = flat_file.parent / flat_file.stem
-    dir_path.mkdir(exist_ok=True)
-    new_path = dir_path / "index.md"
-    flat_file.rename(new_path)
-    return new_path
-
-
 def scan_ids(worklog_root: Path | str, prefix: str) -> list[int]:
     """Scan active + archive dirs for items matching prefix (t/p/s).
 

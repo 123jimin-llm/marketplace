@@ -11,11 +11,10 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from frontmatter import collect_all_items
+from _frontmatter import collect_all_items
 
 # Frontmatter fields that contain cross-references
-REF_FIELDS = ("blocked_by", "implements", "modifies", "targets", "updated_by")
+REF_FIELDS = ("blocked_by", "implements", "modifies", "targets")
 
 
 def find_references(items: list[dict], target_id: str) -> list[dict]:

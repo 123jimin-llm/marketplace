@@ -10,8 +10,7 @@ import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from frontmatter import scan_ids, CLASS_PREFIX
+from _frontmatter import scan_ids, CLASS_PREFIX
 
 
 def main() -> None:

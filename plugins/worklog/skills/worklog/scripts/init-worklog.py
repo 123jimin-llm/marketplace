@@ -6,6 +6,7 @@ Usage:
 """
 
 import argparse
+import shutil
 from pathlib import Path
 
 DIRS = [
@@ -16,7 +17,12 @@ DIRS = [
     "archive",
     "archive/task",
     "archive/plan",
+    "archive/spec",
+    "script",
 ]
+
+# Scripts to copy into worklog/script/
+SCRIPT_DIR = Path(__file__).resolve().parent
 
 
 def init_worklog(root: Path) -> None:
@@ -35,6 +41,20 @@ def init_worklog(root: Path) -> None:
     if not tags_file.exists():
         tags_file.write_text("# Tags\n", encoding="utf-8")
         print(f"  wrote {tags_file}")
+
+    # Copy scripts and lib into worklog/script/
+    _copy_scripts(root / "script")
+
+
+def _copy_scripts(dest: Path) -> None:
+    """Copy worklog scripts into dest, overwriting older copies."""
+    dest.mkdir(parents=True, exist_ok=True)
+
+    for src in SCRIPT_DIR.iterdir():
+        if src.suffix == ".py" and src.name != "init-worklog.py":
+            target = dest / src.name
+            shutil.copy2(src, target)
+            print(f"  copied {target}")
 
 
 def main() -> None:

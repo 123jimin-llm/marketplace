@@ -13,8 +13,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-from frontmatter import parse_item, iter_items, CLASS_PREFIX
+from _frontmatter import parse_item, iter_items, CLASS_PREFIX
 
 CLASS_MAP = {"task": "task", "plan": "plan", "spec": "spec"}
 

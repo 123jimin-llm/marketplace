@@ -24,9 +24,9 @@ separator = "\n---\n"
 #
 # Group 2 — Plan lifecycle
 #   1. No — plan must be approved first (draft → approved) before tasks can implement it.
-#   2. Append t0030 to s0010's updated_by (append-only). Set updated date on s0010.
+#   2. Set updated date on s0010. Task t0030 already has modifies=["s0010"] — that's the cross-ref.
 #   3. No — plans target specs; only tasks may modify specs. Specs immutable except via task.
-#   4. s0010.updated_by must include t0030. Also check updated date is set.
+#   4. s0010's updated date should reflect the modification. Use find-refs.py to verify t0030 references s0010 via modifies.
 #   5. Tasks first (any order among themselves), then plan last. Plan can't archive until all tasks done/archived.
 #   6. validate.py reports "plans ready to archive" when all implementing tasks are complete.
 #
@@ -35,14 +35,14 @@ separator = "\n---\n"
 #   2. NOT auto-cleaned. Abandoned archive only warns; stale blocked_by refs remain. validate.py flags them.
 #   3. t9999 doesn't exist in worklog. Fix: correct the ID or remove from blocked_by. Re-run validate.
 #   4. Create a task to archive or remove the spec. Only a task may modify/archive a spec. Archive to archive/spec/.
-#   5. p0003: add s0005 to targets. t0010: add modifies=["s0005"]. New s0005: full frontmatter with updated_by=["t0010"].
+#   5. p0003: add s0005 to targets. t0010: add modifies=["s0005"]. New s0005: full frontmatter (id, title, created, updated, tags).
 #   6. Can't skip tasks once plan exists — must go through full lifecycle. "Skip plan" means don't create one at all.
 #
 # Group 4 — Spec integrity traps
 #   1. Code diverging from spec is a bug — even if code works. Create task to reconcile. Write spec from plan, not code.
-#   2. Trap: inline spec content must be extracted to spec/ files before archiving. Check targets satisfied, specs exist with plan-derived content, updated_by wired.
+#   2. Trap: inline spec content must be extracted to spec/ files before archiving. Check targets satisfied, specs exist with plan-derived content.
 #   3. Write from plan p0004, NOT from src/auth.py. Spec content derives from plan intent. Code may have bugs or drift.
-#   4. Trap: must verify s0005 and s0006 actually exist with plan-derived content and updated_by includes task IDs. validate.py only checks ref existence, not content correctness.
+#   4. Trap: must verify s0005 and s0006 actually exist with plan-derived content. validate.py only checks ref existence, not content correctness. Use find-refs.py to confirm tasks reference the specs via modifies.
 #   5. Trap: t0020 is missing modifies=["s0008"]. Spec s0008 was never created. Code alone doesn't fulfill plan targets — spec must exist with content from plan.
 
 [[prompts]]
@@ -70,7 +70,7 @@ Repo state: Plan p0005-caching.md exists as draft. It targets specs s0010 and s0
 
 1. Can you immediately create tasks that implement p0005? What must happen first?
 
-2. p0005 is now approved. You create t0030 (implements p0005, modifies s0010) and t0031 (implements p0005, modifies s0011). Task t0030 modifies spec s0010. What change must be made to s0010's frontmatter?
+2. p0005 is now approved. You create t0030 (implements p0005, modifies s0010) and t0031 (implements p0005, modifies s0011). Task t0030 modifies spec s0010. What change must be made to s0010?
 
 3. Can p0005 directly modify s0010 instead of going through a task?
 
