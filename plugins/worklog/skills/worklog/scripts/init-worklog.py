@@ -43,7 +43,14 @@ def init_worklog(root: Path) -> None:
         print(f"  wrote {tags_file}")
 
     # Copy scripts and lib into worklog/script/
-    _copy_scripts(root / "script")
+    script_dir = root / "script"
+    _copy_scripts(script_dir)
+
+    # Add .gitignore to script/ to ignore Python cache files
+    gitignore = script_dir / ".gitignore"
+    if not gitignore.exists():
+        gitignore.write_text("__pycache__/\n*.pyc\n", encoding="utf-8")
+        print(f"  wrote {gitignore}")
 
 
 def _copy_scripts(dest: Path) -> None:
