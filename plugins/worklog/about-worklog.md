@@ -131,3 +131,21 @@ modifies might be archivable — but `validate.py` doesn't flag this.
 `tags.md` is a flat list with no tooling to add, remove, or audit tags. There's no
 validation that tags used in frontmatter actually exist in `tags.md`, and no way to
 find unused tags. Tags are effectively free-text with a suggested vocabulary.
+
+### No validation gate between plan approval and spec creation
+
+Plans declare `targets` (specs to create or modify), but nothing checks that those
+specs actually exist before the plan moves to `active` or tasks begin. Agents
+routinely start implementation without ever creating the targeted specs.
+
+### Tests have no worklog representation
+
+Tests are not a worklog concept — no directory, no item type, no cross-reference
+field, no lifecycle step. Agents write tests after implementation using the code as
+reference, coupling tests to implementation details rather than spec behavior.
+
+### No distinction between specs and user-facing documentation
+
+Specs contain TOML frontmatter, worklog IDs, and cross-references — they are not
+user-readable. There is no `docs/` directory or mechanism to produce user-facing
+documentation from specs.
