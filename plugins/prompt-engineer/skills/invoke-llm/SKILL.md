@@ -11,6 +11,22 @@ Raw LLM API calls (text in, text out). No tool use, no agent context, no skills.
 
 Prefer TOML config mode over multiple script invocations — a single matrix run handles sweeps, produces structured output, and avoids repeated shell calls.
 
+## Models
+
+Routing: `claude*` → Anthropic API (`ANTHROPIC_API_KEY`), everything else → OpenAI API (`OPENAI_API_KEY`).
+
+| Tier | Model ID | Notes |
+|------|----------|-------|
+| Anthropic SOTA | `claude-opus-4-6` | |
+| Anthropic fast | `claude-sonnet-4-6` | Default |
+| Anthropic lite | `claude-haiku-4-5` | |
+| OpenAI SOTA | `gpt-5.4` | |
+| OpenAI fast | `gpt-5-mini` | |
+| Gemini SOTA | `gemini-3.1-pro-preview` | Via OpenAI-compatible endpoint |
+| Gemini fast | `gemini-3-flash-preview` | Via OpenAI-compatible endpoint |
+
+Gemini models require `OPENAI_API_KEY` set to a Gemini-compatible gateway (e.g., OpenRouter).
+
 ## Single-shot mode
 
 ```bash
